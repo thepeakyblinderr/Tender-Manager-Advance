@@ -2592,6 +2592,15 @@ async function syncPush(silent){
 }
 
 // ── Pull ──────────────────────────────────────────────
+async function syncForcePull(){
+  // Clear all local state that could block a clean pull
+  localStorage.removeItem('tt_deleted');
+  tenders = [];
+  save();
+  render();
+  await syncPull(false);
+}
+
 async function syncPull(silent){
   const cfg = getSyncCfg();
   if(!cfg.token) return;
@@ -2601,30 +2610,28 @@ async function syncPull(silent){
     const res  = await gistReq('GET','/gists/'+cfg.gistId);
     const file = res.files && res.files[SYNC_FILE];
     if(!file){
-      // File not in Gist yet — push to create it
       setSyncDot('ok'); syncPush(silent); return;
     }
     let raw=file.content;
     if(file.truncated){ const r2=await fetch(file.raw_url); raw=await r2.text(); }
-    const localDeleted=JSON.parse(localStorage.getItem('tt_deleted')||'{}');
     let arr=[],peopleArr=null,remoteDeleted={};
     try{
       const p=JSON.parse(raw);
       if(Array.isArray(p)){ arr=p; }
       else if(p&&Array.isArray(p.tenders)){ arr=p.tenders; peopleArr=p.people||null; remoteDeleted=p.deleted||{}; }
     }catch(e){ throw new Error('Invalid data in Gist'); }
-    const allDeleted=Object.assign({},localDeleted,remoteDeleted);
-    localStorage.setItem('tt_deleted',JSON.stringify(allDeleted));
-    const filtered=arr.filter(function(t){return !allDeleted[t.id];});
-    if(filtered.length>0||peopleArr){
-      tenders=filtered.map(expandSlim); save();
-      if(peopleArr&&peopleArr.length>0) savePeople(peopleArr);
-      render();
-      localStorage.setItem('tt_last_sync',Date.now().toString());
-      setSyncDot('ok'); if(!silent) toast('Pulled '+filtered.length+' tenders ✓');
-    } else {
-      setSyncDot('ok'); if(!silent) toast('Nothing to pull');
-    }
+
+    // Use REMOTE deleted list as truth — don't let local deleted block valid tenders
+    localStorage.setItem('tt_deleted', JSON.stringify(remoteDeleted));
+    const filtered = arr.filter(function(t){ return !remoteDeleted[t.id]; });
+
+    tenders = filtered.map(expandSlim);
+    save();
+    if(peopleArr && peopleArr.length > 0) savePeople(peopleArr);
+    render();
+    localStorage.setItem('tt_last_sync', Date.now().toString());
+    setSyncDot('ok');
+    if(!silent) toast('Pulled ' + filtered.length + ' tenders ✓');
   }catch(e){ setSyncDot('err'); if(!silent) toast('Pull failed: '+e.message,true); console.warn(e); }
 }
 
