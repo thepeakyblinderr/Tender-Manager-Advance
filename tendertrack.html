@@ -1,0 +1,3267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#07091280">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="TenderTrack">
+<link rel="manifest" href="manifest.json">
+<title>TenderTrack</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Syne:wght@700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+:root{
+  --mono:'JetBrains Mono',monospace;--sans:'Plus Jakarta Sans',system-ui,sans-serif;--title:'Syne',system-ui,sans-serif;
+  --safe-top:env(safe-area-inset-top,0px);--safe-bot:env(safe-area-inset-bottom,0px);
+}
+[data-theme="dark"]{
+  --bg:#0f0f0e;--surface:#1a1a18;--card:#1a1a18;--card2:#242422;
+  --border:#2a2a28;--border2:#3a3a36;
+  --text:#f0f0ec;--dim:#8a8a80;--muted:#242422;
+  --accent:#4d80e6;--accent2:#6b9ef8;--glow:rgba(77,128,230,.2);
+  --green:#2ea878;--red:#e05a4e;--yellow:#d4900a;--purple:#a06cd5;
+  --grad1:rgba(77,128,230,.10);--grad2:rgba(160,108,213,.06);--grad3:rgba(46,168,120,.04);
+}
+[data-theme="light"]{
+  --bg:#f5f5f3;--surface:#ffffff;--card:#ffffff;--card2:#f0f0ee;
+  --border:#e4e4e0;--border2:#c8c8be;
+  --text:#0a0a0a;--dim:#6a6a60;--muted:#f0f0ee;
+  --accent:#1a56db;--accent2:#2563eb;--glow:rgba(26,86,219,.15);
+  --green:#047857;--red:#c0392b;--yellow:#b45309;--purple:#7B2FBE;
+  --grad1:rgba(26,86,219,.06);--grad2:rgba(123,47,190,.04);--grad3:rgba(4,120,87,.03);
+}
+html,body{height:100%;}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;
+  transition:background .2s,color .2s;
+  background-image:
+    radial-gradient(ellipse 80% 60% at 50% -10%,var(--grad1) 0%,transparent 60%),
+    radial-gradient(ellipse 50% 40% at 90% 90%,var(--grad2) 0%,transparent 55%),
+    radial-gradient(ellipse 30% 30% at 10% 60%,var(--grad3) 0%,transparent 50%);}
+
+
+/* ── DESKTOP LAYOUT ─────────────────────────────────── */
+.page-wrap{max-width:960px;margin:0 auto;width:100%;}
+header .page-wrap{display:flex;flex-direction:column;}
+@media(min-width:768px){
+  body{font-size:15px;}
+  main{padding:20px 28px;padding-bottom:40px;}
+  header{padding:0 28px;padding-top:var(--safe-top);}
+  .hdr-row1{height:56px;gap:10px;}
+  .hdr-row2{height:44px;padding-bottom:8px;}
+  .stats-row{gap:10px;margin-bottom:18px;}
+  .stat-chip{padding:10px 16px;font-size:12px;border-radius:12px;}
+  .stat-chip b{font-size:15px;}
+  .board{gap:4px;}
+  .srow{border-radius:14px;padding:12px 14px;}
+  .srow-name{font-size:12px;}
+  .srow-cnt{font-size:11px;padding:3px 10px;}
+  .tchip{padding:8px 15px;min-height:38px;font-size:15px;}
+  .tchip-fu{height:38px;padding:0 11px;font-size:11px;}
+  .board-empty{padding:100px 40px;}
+  .board-empty-title{font-size:20px;}
+  .modal{border-radius:16px;max-width:600px;margin:auto;}
+  .overlay{align-items:center;}
+  .overlay.open .modal{transform:translateY(0);}
+  .fi{font-size:15px;padding:12px 14px;}
+  .fl{font-size:11px;}
+  .btn-s,.btn-c,.btn-del{font-size:15px;padding:11px 24px;}
+  .btn-add{padding:9px 20px;font-size:14px;}
+  .btn-sync,.btn-today,.btn-theme,.btn-emd{padding:8px 14px;font-size:13px;}
+  .brand{font-size:17px;}
+  .brand-pip{width:32px;height:32px;font-size:16px;}
+  .hdr-search{font-size:15px;padding:10px 15px;}
+  .ag-title{font-size:11px;}
+  .ai{padding:13px 16px;border-radius:14px;}
+  .ai-msg{font-size:14px;}
+  .ai-sub{font-size:12px;}
+  .detail-no{font-size:22px;}
+  .detail-sec{font-size:11px;}
+  .dd-l{font-size:11px;}
+  .dd-v{font-size:13px;}
+  .detail-notes{font-size:14px;padding:14px;}
+  .sync-step-title{font-size:14px;}
+  .sync-step-desc{font-size:13px;}
+  .sync-code{font-size:11px;}
+  .mt{font-size:18px;}
+  .fsec{font-size:11px;}
+  .fgrid{gap:14px;}
+  .srow-chips{gap:8px;}
+  .srow-chips.drag-over{min-height:50px;}
+}
+
+
+/* ASSIGNEE BADGE on chip */
+.tchip-assignee{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:18px;height:18px;border-radius:50%;
+  font-size:9px;font-weight:800;font-family:var(--sans);
+  color:#fff;flex-shrink:0;margin-left:3px;
+  box-shadow:0 1px 4px rgba(0,0,0,.25);
+}
+
+/* Assign picker inside detail stage tags */
+.assign-select{
+  background:transparent;border:none;outline:none;
+  font-size:10px;font-family:var(--sans);font-weight:700;
+  cursor:pointer;padding:0 2px 0 4px;
+  color:inherit;opacity:.75;
+  -webkit-appearance:none;appearance:none;
+  max-width:80px;
+}
+.assign-select:hover{opacity:1;}
+
+/* Profile rows */
+.profile-row{display:flex;align-items:center;gap:12px;padding:12px;border-radius:12px;
+  border:1px solid var(--border);background:var(--surface);cursor:pointer;margin-bottom:8px;transition:all .15s;}
+.profile-row:hover{border-color:var(--accent);background:rgba(77,128,230,.06);}
+.profile-row-active{border-color:var(--accent)!important;background:rgba(77,128,230,.08)!important;}
+/* Chip highlight for current user's assignments */
+[data-theme="dark"] .tchip.p-mine{box-shadow:0 0 0 2px var(--accent);}
+[data-theme="light"] .tchip.p-mine{box-shadow:0 0 0 2px var(--accent);}
+/* Profile indicator bar */
+#profile-bar{display:none;align-items:center;justify-content:center;gap:8px;
+  padding:5px 0;font-size:11px;font-family:var(--mono);font-weight:600;
+  background:rgba(77,128,230,.1);border-bottom:1px solid rgba(77,128,230,.2);color:var(--accent);}
+#profile-bar.manager-bar{background:rgba(180,83,9,.1);border-color:rgba(180,83,9,.2);color:var(--yellow);}
+#profile-bar.show{display:flex;}
+
+/* People management modal */
+.people-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);}
+.people-row:last-child{border-bottom:none;}
+.people-avatar{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;flex-shrink:0;}
+.people-name{flex:1;font-size:14px;font-weight:600;color:var(--text);}
+.people-del{background:none;border:none;color:var(--dim);font-size:18px;cursor:pointer;padding:0;line-height:1;flex-shrink:0;}
+.people-del:hover{color:var(--red);}
+
+/* Stage assignment history in detail */
+.stage-assign-row{display:flex;align-items:center;justify-content:space-between;
+  padding:10px 12px;border-radius:10px;
+  border:1px solid var(--border);margin-bottom:6px;background:var(--surface);}
+.stage-assign-info{flex:1;min-width:0;}
+.stage-assign-label{font-family:var(--mono);font-size:11px;font-weight:600;margin-bottom:3px;}
+.stage-assign-meta{font-size:11px;color:var(--dim);font-family:var(--mono);}
+.stage-assign-person{display:flex;align-items:center;gap:7px;flex-shrink:0;}
+.stage-assign-avatar{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff;flex-shrink:0;}
+.stage-assign-name{font-size:12px;font-weight:600;color:var(--text);}
+
+/* Assignment history */
+.assign-history{border-top:1px solid var(--border);padding-top:8px;margin-top:2px;}
+.assign-history-label{font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--dim);font-family:var(--mono);margin-bottom:6px;}
+.assign-history-row{display:flex;align-items:center;gap:7px;padding:5px 0;border-bottom:1px solid var(--border);}
+.assign-history-row:last-child{border-bottom:none;}
+.assign-history-avatar{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:#fff;flex-shrink:0;}
+.assign-history-name{font-size:12px;color:var(--dim);flex:1;}
+.assign-history-when{font-size:10px;color:var(--dim);font-family:var(--mono);flex-shrink:0;}
+
+/* HEADER */
+header{position:sticky;top:0;z-index:50;
+  backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px);
+  border-bottom:1px solid var(--border);padding:0 16px;padding-top:var(--safe-top);
+  transition:background .2s,border-color .2s,box-shadow .2s;}
+[data-theme="dark"] header{background:rgba(15,15,14,.92);box-shadow:0 1px 20px rgba(0,0,0,.3),0 1px 0 rgba(77,128,230,.07);}
+[data-theme="light"] header{background:rgba(245,245,243,.94);box-shadow:0 1px 12px rgba(0,0,0,.06);}
+.hdr-row1{display:flex;align-items:center;height:48px;gap:8px;}
+.hdr-row2{display:flex;align-items:center;height:40px;gap:6px;padding-bottom:6px;}
+.brand{display:flex;align-items:center;gap:9px;flex:1;min-width:0;font-family:var(--title);font-size:15px;font-weight:800;color:var(--text);letter-spacing:-.2px;}
+.brand-pip{width:26px;height:26px;border-radius:8px;flex-shrink:0;
+  background:linear-gradient(135deg,var(--purple),#c084fc);
+  display:flex;align-items:center;justify-content:center;font-size:13px;
+  box-shadow:0 2px 10px rgba(123,47,190,.4);}
+.hdr-search{flex:1;min-width:0;background:var(--surface);border:1px solid var(--border2);
+  border-radius:10px;padding:8px 13px;color:var(--text);font-family:var(--sans);font-size:14px;outline:none;-webkit-appearance:none;
+  transition:border-color .15s,box-shadow .15s,background .2s;}
+.hdr-search:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--glow);}
+.hdr-search::placeholder{color:var(--dim);}
+.btn-theme{width:32px;height:32px;border-radius:9px;border:1px solid var(--border2);background:var(--surface);
+  cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:15px;
+  transition:background .2s,border-color .2s;-webkit-appearance:none;}
+.btn-theme:active{transform:scale(.9);}
+.btn-emd{display:flex;align-items:center;gap:4px;background:var(--surface);border:1px solid var(--border2);
+  border-radius:9px;padding:7px 10px;color:var(--dim);font-family:var(--sans);font-size:12px;font-weight:600;
+  cursor:pointer;white-space:nowrap;flex-shrink:0;text-decoration:none;transition:all .15s;}
+.btn-emd:hover{color:#34d399;border-color:rgba(52,211,153,.4);}
+
+/* Sync */
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.35;}}
+.sync-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;background:var(--border2);transition:background .3s;}
+.sync-dot.ok{background:#34d399;box-shadow:0 0 6px #34d39977;}
+.sync-dot.err{background:#f87171;box-shadow:0 0 6px #f8717177;}
+.sync-dot.busy{background:#fbbf24;box-shadow:0 0 6px #fbbf2477;animation:pulse .8s infinite;}
+.sync-dot.pending{background:#fb923c;box-shadow:0 0 4px #fb923c66;animation:pulse 1.5s infinite;}
+.btn-sync{display:flex;align-items:center;gap:5px;background:var(--surface);border:1px solid var(--border2);
+  border-radius:9px;padding:7px 11px;color:var(--dim);font-family:var(--sans);font-size:12px;font-weight:500;
+  cursor:pointer;white-space:nowrap;flex-shrink:0;-webkit-appearance:none;transition:border-color .15s,background .2s;}
+.btn-sync.ok{color:var(--accent);border-color:rgba(77,128,230,.4);}
+
+/* Today btn */
+.btn-today{position:relative;background:var(--surface);border:1px solid var(--border2);
+  border-radius:9px;padding:7px 13px;color:var(--dim);font-family:var(--sans);font-size:13px;font-weight:600;
+  cursor:pointer;white-space:nowrap;flex-shrink:0;-webkit-appearance:none;transition:all .15s,background .2s;}
+.btn-today.lit{color:var(--accent);border-color:rgba(77,128,230,.45);box-shadow:0 0 12px rgba(77,128,230,.12);}
+.today-badge{position:absolute;top:-5px;right:-5px;background:var(--accent);color:#fff;
+  border-radius:10px;padding:1px 5px;font-size:9px;font-weight:700;border:2px solid var(--bg);line-height:1.4;display:none;}
+.btn-today.lit .today-badge{display:block;}
+
+.btn-add{background:var(--purple);border:none;
+  border-radius:9px;padding:8px 16px;color:#fff;font-family:var(--sans);font-size:13px;font-weight:700;
+  cursor:pointer;white-space:nowrap;flex-shrink:0;-webkit-appearance:none;margin-left:auto;
+  box-shadow:0 2px 12px rgba(123,47,190,.35);transition:box-shadow .15s,transform .1s;}
+
+/* MAIN */
+main{padding:16px;padding-bottom:calc(30px + var(--safe-bot));}
+
+/* STATS */
+.stats-row{display:flex;gap:8px;margin-bottom:16px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+.stats-row::-webkit-scrollbar{display:none;}
+.stat-chip{display:flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--border2);
+  border-radius:12px;padding:9px 14px;font-family:var(--mono);font-size:11px;color:var(--dim);white-space:nowrap;flex-shrink:0;cursor:default;
+  transition:background .2s,border-color .2s;}
+.stat-chip b{color:var(--text);font-size:14px;}
+.stat-chip.btn{cursor:pointer;}
+
+/* BOARD */
+.board{display:flex;flex-direction:column;gap:2px;}
+.srow{border-radius:12px;padding:10px 12px;transition:background .15s,border-color .15s;}
+[data-theme="dark"] .srow.has-items{background:var(--surface);border:1px solid var(--border2);}
+[data-theme="light"] .srow.has-items{background:#fff;border:1px solid var(--border);box-shadow:0 1px 6px rgba(0,0,0,.06);}
+.srow.no-items{background:transparent;border:1px solid transparent;}
+.srow-label{display:flex;align-items:center;gap:9px;padding-bottom:8px;}
+.srow.no-items .srow-label{padding-bottom:0;}
+.srow-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.srow-name{font-family:var(--mono);font-size:11px;font-weight:500;line-height:1.3;color:var(--dim);flex:1;}
+[data-theme="dark"] .srow.has-items .srow-name{color:var(--text);font-weight:600;}
+[data-theme="light"] .srow.has-items .srow-name{color:var(--text);font-weight:700;}
+.srow-cnt{font-family:var(--mono);font-size:10px;font-weight:700;border-radius:20px;padding:2px 9px;color:var(--dim);flex-shrink:0;background:var(--muted);}
+[data-theme="dark"] .srow.has-items .srow-cnt{background:rgba(77,128,230,.14);border:1px solid rgba(77,128,230,.3);color:var(--accent2);}
+[data-theme="light"] .srow.has-items .srow-cnt{background:rgba(26,86,219,.1);border:1px solid rgba(26,86,219,.25);color:var(--accent);}
+.srow-chips{display:flex;flex-wrap:wrap;gap:6px;padding:0 2px;}
+
+/* CHIP */
+[data-theme="dark"] .tchip{display:inline-flex;align-items:center;gap:6px;
+  background:var(--surface);border:1px solid var(--border2);
+  border-radius:10px 0 0 10px;padding:7px 13px;min-height:36px;cursor:pointer;
+  font-family:var(--mono);font-size:14px;font-weight:700;color:var(--text);
+  box-shadow:0 2px 8px rgba(0,0,0,.4);transition:all .15s;}
+[data-theme="light"] .tchip{display:inline-flex;align-items:center;gap:6px;
+  background:#fff;border:1px solid var(--border);
+  border-radius:10px 0 0 10px;padding:7px 13px;min-height:36px;cursor:pointer;
+  font-family:var(--mono);font-size:14px;font-weight:700;color:var(--text);
+  box-shadow:0 2px 6px rgba(0,0,0,.09);transition:all .15s;}
+.tchip-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+[data-theme="dark"] .tchip.p-high{background:rgba(224,90,78,.12);border-color:rgba(224,90,78,.4);color:var(--red);}
+[data-theme="light"] .tchip.p-high{background:rgba(192,57,43,.07);border-color:rgba(192,57,43,.5);color:var(--red);font-weight:700;}
+.srow.no-items .srow-chips{display:none;}
+@media(min-width:600px){
+  .board{gap:3px;}
+  .srow{display:grid;grid-template-columns:220px 1fr;align-items:flex-start;}
+  .srow.has-items .srow-label{border-right:1px solid var(--border);padding:4px 16px 4px 4px;margin-bottom:0;align-self:stretch;align-items:center;}
+  .srow.no-items .srow-label{padding:4px;}
+  .srow-chips{padding:7px 16px;align-items:center;min-height:44px;}
+  .srow.no-items .srow-chips{display:flex;}
+  .srow.no-items .srow-chips::after{content:'—';font-size:11px;color:var(--border2);font-family:var(--mono);}
+  [data-theme="dark"] .tchip:hover{background:var(--card2);border-color:var(--accent);color:var(--accent2);}
+  [data-theme="light"] .tchip:hover{background:var(--card2);border-color:var(--accent);color:var(--accent);}
+  [data-theme="dark"] .tchip.p-high:hover{border-color:var(--red);color:var(--red);}
+  [data-theme="light"] .tchip.p-high:hover{background:rgba(192,57,43,.1);border-color:var(--red);color:var(--red);}
+}
+[data-theme="dark"] .tchip-fu{display:inline-flex;align-items:center;justify-content:center;
+  background:var(--card2);border:1px solid var(--border2);border-left:none;
+  border-radius:0 10px 10px 0;padding:0 9px;height:36px;min-width:30px;cursor:pointer;
+  font-size:11px;font-family:var(--mono);font-weight:600;
+  color:var(--dim);flex-shrink:0;transition:all .15s;white-space:nowrap;}
+[data-theme="light"] .tchip-fu{display:inline-flex;align-items:center;justify-content:center;
+  background:var(--card2);border:1px solid var(--border);border-left:none;
+  border-radius:0 10px 10px 0;padding:0 9px;height:36px;min-width:30px;cursor:pointer;
+  font-size:11px;font-family:var(--mono);font-weight:600;
+  color:var(--dim);flex-shrink:0;transition:all .15s;white-space:nowrap;}
+[data-theme="dark"] .tchip-fu:active,[data-theme="dark"] .tchip-fu:hover{background:rgba(77,128,230,.14);color:var(--accent2);}
+[data-theme="light"] .tchip-fu:active,[data-theme="light"] .tchip-fu:hover{background:rgba(26,86,219,.08);color:var(--accent);}
+.tchip-fu.fu-due{background:rgba(224,90,78,.12);border-color:rgba(224,90,78,.35);color:var(--red);}
+
+.board-empty{text-align:center;padding:70px 20px;color:var(--dim);}
+.board-empty-icon{font-size:40px;margin-bottom:12px;opacity:.25;}
+.board-empty-title{font-family:var(--title);font-size:17px;font-weight:800;color:var(--text);margin-bottom:6px;}
+.board-empty-sub{font-size:13px;}
+
+/* DRAG AND DROP */
+.tchip-wrap{display:inline-flex;align-items:center;touch-action:none;}
+.tchip-wrap.dragging .tchip,.tchip-wrap.dragging .tchip-fu{opacity:0.3;}
+.drag-ghost{
+  position:fixed;z-index:9999;pointer-events:none;
+  display:inline-flex;align-items:center;
+  opacity:0.93;transform:scale(1.07) rotate(-1.5deg);
+  box-shadow:0 10px 36px rgba(0,0,0,.55);border-radius:12px;}
+.srow-chips.drag-over{
+  background:rgba(77,128,230,.08);
+  border-radius:8px;outline:2px dashed rgba(77,128,230,.5);
+  outline-offset:3px;min-height:44px;}
+[data-theme="light"] .srow-chips.drag-over{
+  background:rgba(26,86,219,.06);outline-color:rgba(26,86,219,.4);}
+
+/* OVERLAY + MODAL */
+.overlay{position:fixed;inset:0;z-index:100;background:rgba(5,3,12,.85);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  display:flex;align-items:flex-end;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity .2s;}
+.overlay.open{opacity:1;pointer-events:all;}
+.modal{background:var(--card);border:1px solid var(--border2);
+  border-top:1px solid rgba(123,47,190,.2);
+  border-radius:22px 22px 0 0;width:100%;max-width:560px;max-height:92vh;overflow-y:auto;
+  padding:20px 18px;padding-bottom:calc(20px + var(--safe-bot));
+  transform:translateY(100%);transition:transform .3s cubic-bezier(.32,1,.32,1);
+  box-shadow:0 -16px 60px rgba(0,0,0,.25);}
+.overlay.open .modal{transform:translateY(0);}
+.modal::-webkit-scrollbar{width:0;}
+.mfoot{position:sticky;bottom:0;background:var(--card);padding-top:12px;margin-top:8px;}
+.modal::before{content:'';display:block;width:40px;height:4px;border-radius:2px;
+  background:var(--border2);margin:0 auto 20px;}
+.mh{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+.mt{font-family:var(--title);font-size:16px;font-weight:800;color:var(--text);letter-spacing:-.1px;}
+.xbtn{background:var(--card2);border:1px solid var(--border2);border-radius:8px;width:32px;height:32px;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--dim);font-size:18px;flex-shrink:0;
+  transition:background .15s;}
+.xbtn:hover{background:var(--border2);}
+
+/* FORM */
+.frow{margin-bottom:14px;}
+.fl{font-size:10px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;color:var(--dim);font-family:var(--mono);display:block;margin-bottom:6px;}
+.fi{background:var(--surface);border:1px solid var(--border2);border-radius:11px;padding:11px 13px;
+  color:var(--text);font-family:var(--sans);font-size:15px;outline:none;width:100%;-webkit-appearance:none;
+  transition:border-color .15s,box-shadow .15s;}
+.fi:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--glow);}
+.fi::placeholder{color:var(--dim);}
+input[type="date"].fi{color-scheme:dark;}
+select.fi{appearance:none;-webkit-appearance:none;}
+textarea.fi{resize:vertical;min-height:60px;font-size:14px;}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+.fgrid .frow{margin-bottom:0;}
+@media(max-width:380px){.fgrid{grid-template-columns:1fr;}}
+.fsec{font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--purple);
+  font-family:var(--mono);padding:12px 0 8px;border-top:1px solid var(--border);}
+
+/* PRIORITY TOGGLE */
+.pri-toggle{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border2);
+  border-radius:11px;padding:12px 14px;cursor:pointer;user-select:none;transition:all .15s;}
+.pri-toggle.on{background:rgba(192,57,43,.08);border-color:rgba(192,57,43,.4);}
+.pri-icon{font-size:16px;}
+.pri-label{font-size:13px;font-weight:500;flex:1;color:var(--dim);}
+.pri-toggle.on .pri-label{color:var(--red);}
+.pri-check{width:22px;height:22px;border-radius:6px;border:1px solid var(--border2);background:var(--muted);
+  display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;color:transparent;}
+.pri-toggle.on .pri-check{background:var(--red);border-color:var(--red);color:#fff;}
+.af-toggle.on{background:rgba(77,128,230,.08);border-color:rgba(77,128,230,.4);}
+.af-toggle.on .pri-label{color:var(--accent);}
+.af-toggle.on .pri-check{background:var(--accent);border-color:var(--accent);color:#fff;}
+
+/* REMOVE CHIPS */
+.rbox{background:rgba(185,28,28,.07);border:1px solid rgba(239,68,68,.2);border-radius:11px;padding:12px;margin-bottom:14px;}
+.rbox-t{font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--red);font-family:var(--mono);margin-bottom:8px;}
+.chips{display:flex;flex-wrap:wrap;gap:6px;}
+.chip{display:flex;align-items:center;gap:5px;background:var(--card2);border:1px solid var(--border2);border-radius:8px;padding:5px 10px;}
+.chip-l{font-size:12px;color:var(--dim);}
+.chip-x{background:none;border:none;color:var(--red);cursor:pointer;font-size:18px;line-height:1;padding:0;display:flex;align-items:center;}
+
+/* BUTTONS */
+.mfoot{display:flex;justify-content:flex-end;gap:8px;margin-top:18px;padding-top:14px;border-top:1px solid var(--border);}
+.btn-c{background:var(--card2);border:1px solid var(--border2);border-radius:10px;padding:10px 18px;
+  color:var(--dim);font-family:var(--sans);font-size:14px;font-weight:500;cursor:pointer;-webkit-appearance:none;transition:background .15s;}
+.btn-s{background:var(--purple);border:none;border-radius:10px;
+  padding:10px 22px;color:#fff;font-family:var(--sans);font-size:14px;font-weight:700;cursor:pointer;-webkit-appearance:none;
+  box-shadow:0 2px 12px rgba(123,47,190,.3);transition:box-shadow .15s,transform .1s;}
+.btn-del{background:var(--red);border:none;border-radius:10px;
+  padding:10px 20px;color:#fff;font-family:var(--sans);font-size:14px;font-weight:700;cursor:pointer;-webkit-appearance:none;}
+.btn-push{background:var(--green);border:none;border-radius:10px;
+  padding:10px 16px;color:#fff;font-family:var(--sans);font-size:13px;font-weight:700;cursor:pointer;flex:1;-webkit-appearance:none;}
+.btn-pull{background:var(--accent);border:none;border-radius:10px;
+  padding:10px 16px;color:#fff;font-family:var(--sans);font-size:13px;font-weight:700;cursor:pointer;flex:1;-webkit-appearance:none;}
+
+/* DETAIL */
+.detail-no{font-family:var(--title);font-size:20px;font-weight:800;color:var(--text);margin-bottom:10px;}
+.detail-stages{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;}
+.detail-sec{font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--purple);
+  font-family:var(--mono);padding:10px 0 8px;border-top:1px solid var(--border);}
+.detail-dates{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:4px;}
+.dd-l{font-size:10px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;color:var(--dim);font-family:var(--mono);margin-bottom:2px;}
+.dd-v{font-size:12px;font-family:var(--mono);color:var(--text);}
+[data-theme="dark"] .dd-v.warn{color:var(--yellow);}
+[data-theme="light"] .dd-v.warn{color:var(--yellow);}
+[data-theme="dark"] .dd-v.danger{color:var(--red);}
+[data-theme="light"] .dd-v.danger{color:var(--red);}
+.detail-notes{background:var(--surface);border:1px solid var(--border2);border-radius:11px;padding:12px;font-size:13px;line-height:1.6;}
+
+/* ACTIONS */
+.actions-date{font-size:11px;font-family:var(--mono);color:var(--dim);margin-bottom:18px;text-align:center;letter-spacing:.3px;}
+.ag{margin-bottom:20px;}
+.ag:last-child{margin-bottom:0;}
+.ag-header{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.ag-title{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;font-family:var(--mono);flex:1;}
+.ag-count{font-size:10px;font-family:var(--mono);font-weight:700;border-radius:20px;padding:2px 8px;}
+
+/* TODAY — red */
+.ag.s-today .ag-title{color:var(--red);}
+.ag.s-today .ag-count{background:rgba(192,57,43,.12);color:var(--red);}
+.ag.s-today .ag-header{border-bottom:1px solid rgba(220,48,48,.25);padding-bottom:8px;}
+.ag.s-today .ai{background:rgba(192,57,43,.06);border-color:rgba(192,57,43,.22);}
+[data-theme="dark"] .ag.s-today .ag-title{color:var(--red);}
+[data-theme="dark"] .ag.s-today .ag-count{background:rgba(224,90,78,.16);color:var(--red);}
+[data-theme="dark"] .ag.s-today .ai{background:rgba(224,90,78,.08);border-color:rgba(224,90,78,.28);}
+.ag.s-today .ai-msg{color:var(--red);}
+[data-theme="dark"] .ag.s-today .ai-msg{color:var(--red);}
+
+/* WEEK — amber */
+.ag.s-week .ag-title{color:var(--yellow);}
+.ag.s-week .ag-count{background:rgba(180,83,9,.12);color:var(--yellow);}
+.ag.s-week .ag-header{border-bottom:1px solid rgba(180,83,9,.2);padding-bottom:8px;}
+.ag.s-week .ai{background:rgba(180,83,9,.06);border-color:rgba(180,83,9,.2);}
+[data-theme="dark"] .ag.s-week .ag-title{color:var(--yellow);}
+[data-theme="dark"] .ag.s-week .ag-count{background:rgba(212,144,10,.14);color:var(--yellow);}
+[data-theme="dark"] .ag.s-week .ag-header{border-bottom:1px solid rgba(251,191,36,.2);}
+[data-theme="dark"] .ag.s-week .ai{background:rgba(212,144,10,.07);border-color:rgba(212,144,10,.2);}
+.ag.s-week .ai-msg{color:var(--yellow);}
+[data-theme="dark"] .ag.s-week .ai-msg{color:var(--yellow);}
+
+/* SOON — blue */
+.ag.s-soon .ag-title{color:var(--accent);}
+.ag.s-soon .ag-count{background:rgba(26,86,219,.1);color:var(--accent);}
+.ag.s-soon .ag-header{border-bottom:1px solid rgba(26,125,255,.2);padding-bottom:8px;}
+.ag.s-soon .ai{background:rgba(26,86,219,.04);border-color:rgba(26,86,219,.15);}
+[data-theme="dark"] .ag.s-soon .ag-title{color:var(--accent2);}
+[data-theme="dark"] .ag.s-soon .ag-count{background:rgba(77,128,230,.14);color:var(--accent2);}
+[data-theme="dark"] .ag.s-soon .ai{background:rgba(77,128,230,.06);border-color:rgba(77,128,230,.18);}
+.ag.s-soon .ai-msg{color:var(--accent);}
+[data-theme="dark"] .ag.s-soon .ai-msg{color:var(--accent2);}
+
+/* FOLLOWUP — muted */
+.ag.s-followup .ag-title{color:var(--dim);}
+.ag.s-followup .ag-count{background:var(--muted);color:var(--dim);}
+.ag.s-followup .ag-header{border-bottom:1px solid var(--border);padding-bottom:8px;}
+.ag.s-followup .ai{background:var(--surface);border-color:var(--border2);}
+.ag.s-followup .ai-msg{color:var(--text);}
+
+.ai{display:flex;align-items:flex-start;gap:10px;border:1px solid;
+  border-radius:12px;padding:12px 14px;margin-bottom:7px;}
+.ai:last-child{margin-bottom:0;}
+.ai-icon{font-size:15px;flex-shrink:0;margin-top:1px;}
+.ai-body{flex:1;min-width:0;cursor:pointer;}
+.ai-tender{font-family:var(--mono);font-size:14px;font-weight:700;margin-bottom:3px;}
+[data-theme="dark"] .ai-tender{color:var(--accent2);}
+[data-theme="light"] .ai-tender{color:var(--accent);}
+.ai-msg{font-size:13px;font-weight:600;line-height:1.4;}
+.ai-sub{font-size:11px;color:var(--dim);margin-top:3px;font-family:var(--mono);}
+.snooze-btn{flex-shrink:0;background:var(--muted);border:1px solid var(--border2);border-radius:8px;
+  padding:5px 10px;color:var(--dim);font-size:11px;font-family:var(--sans);cursor:pointer;white-space:nowrap;align-self:center;}
+.done-btn{flex-shrink:0;background:rgba(46,168,120,.12);border:1px solid rgba(46,168,120,.35);border-radius:8px;
+  padding:5px 10px;color:var(--green);font-size:13px;font-weight:700;font-family:var(--sans);cursor:pointer;white-space:nowrap;align-self:center;transition:background .15s;}
+.done-btn:hover{background:rgba(46,168,120,.22);}
+.ag-chevron{font-size:11px;color:var(--dim);flex-shrink:0;}
+.ag-open .ag-chevron{color:var(--text);}
+.ag-header{user-select:none;}
+.ai-arrow{color:var(--dim);font-size:18px;font-weight:300;flex-shrink:0;align-self:center;cursor:pointer;line-height:1;}
+.no-actions{text-align:center;padding:40px 20px;}
+.no-actions-icon{font-size:36px;margin-bottom:10px;opacity:.25;}
+.no-actions-title{font-family:var(--title);font-size:15px;font-weight:800;color:var(--text);margin-bottom:4px;}
+.no-actions-sub{font-size:13px;color:var(--dim);}
+
+/* SYNC */
+.sync-step{display:flex;gap:12px;align-items:flex-start;margin-bottom:16px;}
+.sync-step-num{width:24px;height:24px;border-radius:50%;flex-shrink:0;
+  background:rgba(123,47,190,.12);border:1px solid rgba(123,47,190,.28);
+  display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--purple);font-family:var(--mono);margin-top:1px;}
+.sync-step-body{flex:1;}
+.sync-step-title{font-family:var(--sans);font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px;}
+.sync-step-desc{font-size:12px;color:var(--dim);line-height:1.5;}
+.sync-step-desc a{color:var(--accent);text-decoration:none;}
+.sync-code{background:var(--muted);border:1px solid var(--border2);border-radius:9px;padding:10px 12px;margin-top:8px;
+  font-family:var(--mono);font-size:10px;color:var(--text);line-height:1.6;overflow-x:auto;white-space:pre;cursor:pointer;position:relative;}
+.sync-code::after{content:'tap to copy';position:absolute;top:7px;right:8px;font-size:9px;color:var(--dim);font-family:var(--sans);}
+.sync-bar{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border2);
+  border-radius:11px;padding:10px 14px;margin-bottom:14px;font-size:12px;color:var(--dim);font-family:var(--mono);}
+.sync-bar b{color:var(--text);}
+.sync-acts{display:flex;gap:8px;margin-bottom:14px;}
+.sync-warn{font-size:11px;color:var(--yellow);background:rgba(180,83,9,.07);border:1px solid rgba(180,83,9,.18);border-radius:9px;padding:8px 12px;margin-top:10px;line-height:1.5;}
+
+/* DEL */
+.del-q{font-size:15px;font-weight:500;margin-bottom:4px;}
+.del-sub{font-size:13px;color:var(--dim);}
+
+/* TOAST */
+.toast{position:fixed;bottom:calc(20px + var(--safe-bot));left:50%;
+  transform:translateX(-50%) translateY(60px);
+  background:var(--text);border:1px solid var(--border2);border-radius:12px;padding:10px 18px;
+  font-size:13px;color:var(--bg);display:flex;align-items:center;gap:6px;z-index:200;
+  opacity:0;transition:all .22s;white-space:nowrap;pointer-events:none;
+  box-shadow:0 4px 24px rgba(0,0,0,.15);}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
+.hidden{display:none!important;}
+</style>
+<script>
+if('serviceWorker' in navigator){
+  window.addEventListener('load', function(){
+    navigator.serviceWorker.register('sw.js').catch(function(){});
+  });
+}
+</script>
+</head>
+<body>
+
+<header>
+<div class="page-wrap">
+  <div class="hdr-row1">
+    <div class="brand"><div class="brand-pip">📋</div>TenderTrack</div>
+    <button class="btn-theme" id="btn-theme" onclick="toggleTheme()" title="Toggle theme">🌙</button>
+    <a class="btn-emd" href="emd.html">💰 EMD</a>
+    <button class="btn-theme" id="btn-profile" onclick="openProfileSwitch()" title="Switch profile" style="font-size:13px;padding:6px 10px;">👤</button>
+    <button class="btn-add" onclick="openAdd()">+ Add</button>
+  </div>
+  <div class="hdr-row2">
+    <input class="hdr-search" id="search" placeholder="Search tender or amount…" oninput="render()">
+    <button class="btn-sync" id="btn-sync" onclick="openSync()">
+      <span class="sync-dot" id="sync-dot"></span>Sync
+    </button>
+    <button class="btn-today" id="btn-today" onclick="openActions()">
+      Today<span class="today-badge" id="today-badge">0</span>
+    </button>
+  </div>
+</div>
+</header>
+<div id="profile-bar"></div>
+<main>
+<div class="page-wrap">
+  <div class="stats-row">
+    <div class="stat-chip"><b id="s-total">0</b>&nbsp;Tenders</div>
+    <div class="stat-chip"><b id="s-stages">0</b>&nbsp;Active</div>
+    <div class="stat-chip hidden" id="s-expiry-chip" onclick="openExpiring()" style="cursor:pointer"><b id="s-expiry" style="color:var(--red)">0</b>&nbsp;Expiring</div>
+    <div class="stat-chip btn" id="pf-all"  onclick="setPF('')"    style="border-color:rgba(77,128,230,.4);color:var(--accent2)">All</div>
+    <div class="stat-chip btn" id="pf-high" onclick="setPF('high')">🔴&nbsp;High&nbsp;<b id="s-high">0</b></div>
+    <div class="stat-chip btn" id="pf-af"   onclick="setPF('af')">🔷&nbsp;AF&nbsp;<b id="s-af">0</b></div>
+  </div>
+  <div class="board" id="board"></div>
+</div>
+</main>
+
+<!-- ADD/EDIT -->
+<div class="overlay" id="modal-add">
+  <div class="modal">
+    <div class="mh">
+      <div class="mt" id="modal-title">Add Tender</div>
+      <button class="xbtn" onclick="closeM('modal-add')">×</button>
+    </div>
+    <div class="frow"><label class="fl">Tender No *</label>
+      <input class="fi" id="f-no" placeholder="e.g. TND/2024/001" autocomplete="off"></div>
+    <div class="frow"><label class="fl">Stage *</label>
+      <select class="fi" id="f-stage"></select></div>
+    <div class="frow"><label class="fl">Priority</label>
+      <div class="pri-toggle" id="pri-toggle" onclick="togglePri()">
+        <span class="pri-icon">🔴</span>
+        <span class="pri-label">Mark as High Priority</span>
+        <span class="pri-check" id="pri-check"></span>
+      </div>
+    </div>
+    <div class="frow"><label class="fl">AF File</label>
+      <div class="pri-toggle af-toggle" id="af-toggle" onclick="toggleAF()">
+        <span class="pri-icon">🔷</span>
+        <span class="pri-label">Mark as AF File</span>
+        <span class="pri-check" id="af-check"></span>
+      </div>
+    </div>
+    <div class="frow"><label class="fl">Notes</label>
+      <textarea class="fi" id="f-notes" placeholder="Any remarks…"></textarea></div>
+    <div class="fsec">EMD</div>
+    <div class="frow"><label class="fl">EMD Amount (₹)</label>
+      <input type="number" class="fi" id="f-emd" placeholder="e.g. 50000" inputmode="numeric"></div>
+    <div class="fsec">Key Dates</div>
+    <div class="fgrid">
+      <div class="frow"><label class="fl">Sale End</label><input type="date" class="fi" id="f-sale-end"></div>
+      <div class="frow"><label class="fl">Tech Bid Opening</label><input type="date" class="fi" id="f-tech-bid"></div>
+      <div class="frow"><label class="fl">Price Bid Opening</label><input type="date" class="fi" id="f-price-bid"></div>
+      <div class="frow"><label class="fl">Reverse Auction</label><input type="date" class="fi" id="f-ra"></div>
+      <div class="frow"><label class="fl">Bid Validity Expiry</label><input type="date" class="fi" id="f-validity"></div>
+      <div class="frow"><label class="fl">TCQ End Date</label><input type="date" class="fi" id="f-tcq"></div>
+    </div>
+    <div id="rbox" class="rbox hidden">
+      <div class="rbox-t">Remove a stage</div>
+      <div class="chips" id="stage-chips"></div>
+    </div>
+    <div class="mfoot">
+      <button class="btn-c" onclick="closeM('modal-add')">Cancel</button>
+      <button class="btn-s" onclick="saveTender()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- DETAIL -->
+<div class="overlay" id="modal-detail">
+  <div class="modal">
+    <div class="mh">
+      <div class="mt">Tender Details</div>
+      <button class="xbtn" onclick="closeM('modal-detail')">×</button>
+    </div>
+    <div id="detail-body"></div>
+    <div class="mfoot">
+      <button class="btn-del" id="btn-del-d" style="margin-right:auto">Delete</button>
+      <button class="btn-c" id="btn-followup-d">🔔 Follow-up</button>
+      <button class="btn-c" onclick="closeM('modal-detail')">Close</button>
+      <button class="btn-s" id="btn-edit-d">Edit</button>
+    </div>
+  </div>
+</div>
+
+<!-- TODAY'S ACTIONS -->
+<div class="overlay" id="modal-actions">
+  <div class="modal">
+    <div class="mh">
+      <div class="mt">📅 Today's Actions</div>
+      <button class="xbtn" onclick="closeM('modal-actions')">×</button>
+    </div>
+    <div id="actions-body"></div>
+  </div>
+</div>
+
+<!-- SYNC -->
+<div class="overlay" id="modal-sync">
+  <div class="modal">
+    <div class="mh">
+      <div class="mt">☁️ Google Sheets Sync</div>
+      <button class="xbtn" onclick="closeM('modal-sync')">×</button>
+    </div>
+    <div id="sync-body"></div>
+  </div>
+</div>
+
+<!-- EXPIRING BIDS -->
+<div class="overlay" id="modal-expiring">
+  <div class="modal">
+    <div class="mh">
+      <div class="mt">⏰ Expiring Bid Validities</div>
+      <button class="xbtn" onclick="closeM('modal-expiring')">×</button>
+    </div>
+    <div id="expiring-body"></div>
+  </div>
+</div>
+
+<!-- DELETE -->
+<div class="overlay" id="modal-del">
+  <div class="modal" style="max-width:400px">
+    <div class="mh">
+      <div class="mt">Delete Tender</div>
+      <button class="xbtn" onclick="closeM('modal-del')">×</button>
+    </div>
+    <p class="del-q" id="del-q">Delete this tender?</p>
+    <p class="del-sub">This cannot be undone.</p>
+    <div class="mfoot">
+      <button class="btn-c" onclick="closeM('modal-del')">Cancel</button>
+      <button class="btn-del" id="del-ok">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- FOLLOW-UP -->
+<div class="overlay" id="modal-fu">
+  <div class="modal" style="max-width:420px">
+    <div class="mh">
+      <div class="mt">🔔 Set Follow-Up Reminder</div>
+      <button class="xbtn" onclick="closeM('modal-fu')">&#215;</button>
+    </div>
+    <div id="fu-tender-name" style="font-family:var(--mono);font-size:13px;color:var(--accent2);margin-bottom:14px;"></div>
+    <div id="fu-current-info"></div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+      <span style="font-size:13px;color:var(--dim);flex:1">Remind me in</span>
+      <input type="number" id="fu-days" min="0" max="365" value="3"
+        style="width:64px;background:var(--surface);border:1px solid var(--border2);border-radius:8px;
+        padding:9px 10px;color:var(--text);font-family:var(--mono);font-size:15px;text-align:center;outline:none;-webkit-appearance:none;">
+      <span style="font-size:13px;color:var(--dim)">days</span>
+    </div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;">
+      <div onclick="setFuDays(0)" style="background:var(--muted);border:1px solid var(--border2);border-radius:7px;padding:7px 14px;font-size:13px;font-family:var(--mono);font-weight:600;color:var(--dim);cursor:pointer;">Today</div>
+      <div onclick="setFuDays(1)" style="background:var(--muted);border:1px solid var(--border2);border-radius:7px;padding:7px 16px;font-size:13px;font-family:var(--mono);font-weight:600;color:var(--dim);cursor:pointer;">1d</div>
+      <div onclick="setFuDays(2)" style="background:var(--muted);border:1px solid var(--border2);border-radius:7px;padding:7px 16px;font-size:13px;font-family:var(--mono);font-weight:600;color:var(--dim);cursor:pointer;">2d</div>
+      <div onclick="setFuDays(3)" style="background:var(--muted);border:1px solid var(--border2);border-radius:7px;padding:7px 16px;font-size:13px;font-family:var(--mono);font-weight:600;color:var(--dim);cursor:pointer;">3d</div>
+    </div>
+    <div class="mfoot">
+      <button class="btn-c" id="fu-clear-btn" onclick="clearFollowUp()" style="margin-right:auto;color:#f87171;border-color:rgba(239,68,68,.3);display:none">Clear</button>
+      <button class="btn-c" onclick="closeM('modal-fu')">Cancel</button>
+      <button class="btn-s" onclick="saveFollowUp()">Set Reminder</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- PROFILE PICKER -->
+<div class="overlay" id="modal-profile" style="z-index:200">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-drag" style="width:40px;height:4px;border-radius:2px;background:var(--border2);margin:0 auto 20px;"></div>
+    <div class="mh">
+      <div class="mt" id="profile-modal-title">Who are you?</div>
+      <button class="xbtn" id="profile-close-btn" style="display:none" onclick="closeM('modal-profile')">×</button>
+    </div>
+    <div style="font-size:13px;color:var(--dim);margin-bottom:18px;" id="profile-modal-sub">Select your profile to continue</div>
+    <div id="profile-list"></div>
+  </div>
+</div>
+
+<!-- PEOPLE MANAGEMENT -->
+<div class="overlay" id="modal-people">
+  <div class="modal">
+    <div class="modal-drag" style="width:40px;height:4px;border-radius:2px;background:var(--border2);margin:0 auto 20px;"></div>
+    <div class="mh">
+      <div class="mt">👥 People</div>
+      <button class="xbtn" onclick="closeM('modal-people')">×</button>
+    </div>
+    <!-- Tab bar -->
+    <div style="display:flex;gap:6px;margin-bottom:16px;">
+      <button id="people-tab-manage" onclick="switchPeopleTab('manage')"
+        style="flex:1;padding:8px;border-radius:9px;font-family:var(--mono);font-size:12px;font-weight:700;cursor:pointer;
+               background:var(--purple);color:#fff;border:none;">
+        Manage
+      </button>
+      <button id="people-tab-workload" onclick="switchPeopleTab('workload')"
+        style="flex:1;padding:8px;border-radius:9px;font-family:var(--mono);font-size:12px;font-weight:700;cursor:pointer;
+               background:var(--card2);color:var(--dim);border:1px solid var(--border2);">
+        Workload
+      </button>
+    </div>
+    <!-- Manage tab -->
+    <div id="people-tab-manage-body">
+      <div id="people-list"></div>
+      <div style="margin-top:14px;border-top:1px solid var(--border);padding-top:14px;">
+        <div class="fl">Add Person</div>
+        <div style="display:flex;gap:8px;margin-bottom:8px;">
+          <input class="fi" id="f-person-name" placeholder="Name" autocomplete="off" style="flex:1;font-size:14px;">
+        </div>
+        <div style="display:flex;gap:6px;margin-bottom:10px;">
+          <button id="role-btn-officer" onclick="setNewPersonRole('officer')"
+            style="flex:1;padding:8px;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--mono);
+                   background:var(--purple);color:#fff;border:none;">Officer</button>
+          <button id="role-btn-assistant" onclick="setNewPersonRole('assistant')"
+            style="flex:1;padding:8px;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--mono);
+                   background:var(--card2);color:var(--dim);border:1px solid var(--border2);">Assistant</button>
+          <button id="role-btn-manager" onclick="setNewPersonRole('manager')"
+            style="flex:1;padding:8px;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--mono);
+                   background:var(--card2);color:var(--dim);border:1px solid var(--border2);">Manager</button>
+        </div>
+        <button class="btn-s" onclick="addPerson()" style="width:100%;padding:10px;">Add</button>
+      </div>
+    </div>
+    <!-- Workload tab -->
+    <div id="people-tab-workload-body" style="display:none;">
+      <div id="people-workload"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ASSIGN PERSON TO STAGE -->
+<div class="overlay" id="modal-assign">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-drag" style="width:40px;height:4px;border-radius:2px;background:var(--border2);margin:0 auto 20px;"></div>
+    <div class="mh">
+      <div class="mt" id="assign-modal-title">Assign Stage</div>
+      <button class="xbtn" onclick="closeM('modal-assign')">×</button>
+    </div>
+    <div id="assign-stage-info" style="font-size:12px;color:var(--dim);font-family:var(--mono);margin-bottom:16px;"></div>
+    <div id="assign-people-list"></div>
+    <div class="mfoot">
+      <button class="btn-c" onclick="closeM('modal-assign')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── THEME ─────────────────────────────────────────────
+(function(){
+  const saved = localStorage.getItem('tt_theme');
+  const sys = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  const theme = saved || sys;
+  document.documentElement.setAttribute('data-theme', theme);
+  const btn = document.getElementById('btn-theme');
+  if(btn) btn.textContent = theme === 'dark' ? '☀️' : '🌙';
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if(meta) meta.content = theme === 'dark' ? '#0f0f0e' : '#f5f5f3';
+})();
+function toggleTheme(){
+  const cur = document.documentElement.getAttribute('data-theme');
+  const next = cur === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('tt_theme', next);
+  const btn = document.getElementById('btn-theme');
+  if(btn) btn.textContent = next === 'dark' ? '☀️' : '🌙';
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if(meta) meta.content = next === 'dark' ? '#0f0f0e' : '#f5f5f3';
+}
+
+// ── DATA ──────────────────────────────────────────────
+const STAGES = [
+  {id:0 , label:'PR Received Under Scrutiny',                            color:'#94a3b8'},
+  {id:1 , label:'PR Observation Sent / Marked for Discrepancies',        color:'#f472b6'},
+  {id:2 , label:'Tender Under Prep',                                     color:'#7dd3fc'},
+  {id:3 , label:'Tender Under Approval',                                 color:'#60a5fa'},
+  {id:4 , label:'Tender on Sale',                                        color:'#38bdf8'},
+  {id:5 , label:'Under Technical Evaluation',                            color:'#93c5fd'},
+  {id:6 , label:'Offers Under Evaluation in Contract Cell',              color:'#c084fc'},
+  {id:7 , label:'TR Observations Sent for Review',                       color:'var(--yellow)'},
+  {id:8 , label:'TCQ Under Preparation',                                 color:'#fb923c'},
+  {id:9 , label:'Under TCQ',                                             color:'#fb923c'},
+  {id:10, label:'FTR Awaited',                                           color:'#2dd4bf'},
+  {id:11, label:'CBA Checking',                                          color:'#38bdf8'},
+  {id:12, label:'TC / Proposal for PBO Under Preparation',               color:'var(--red)'},
+  {id:13, label:'TC / Proposal for PBO Put Up',                          color:'#fde68a'},
+  {id:14, label:'Evaluation Freezed e-Tender/GeM. PBO Scheduled',        color:'#34d399'},
+  {id:15, label:'Price Bid Opened. Under Reverse Auction',               color:'#4ade80'},
+  {id:16, label:'Price Bids Opened. Under Estimate Review',              color:'#86efac'},
+  {id:17, label:'Price Negotiation Approval Put Up',                     color:'var(--yellow)'},
+  {id:31, label:'Under Negotiation',                                      color:'#f59e0b'},
+  {id:18, label:'Price Workability Awaited from Indenter',               color:'#fb7185'},
+  {id:19, label:'Price Workability Awaited from Bidder',                 color:'#f97316'},
+  {id:20, label:'Price Reasonability Awaited',                           color:'#e879f9'},
+  {id:21, label:'Under Price Matching',                                  color:'#e879f9'},
+  {id:22, label:'Under Document Verification',                           color:'#6ee7b7'},
+  {id:23, label:'CS Checking',                                           color:'#2dd4bf'},
+  {id:24, label:'TC / Proposal for Award Under Preparation',             color:'#3b9eff'},
+  {id:25, label:'TC / Proposal for Award Put Up',                        color:'#60a5fa'},
+  {id:26, label:'LOA Under Prep',                                        color:'#86efac'},
+  {id:27, label:'SAP Release Pending',                                   color:'#fde68a'},
+  {id:28, label:'AOC Pending',                                           color:'#3b9eff'},
+  {id:29, label:'Tender Cancellation Approval Put Up',                   color:'#f97316'},
+  {id:30, label:'Others',                                                color:'#475569'},
+];
+
+const KEY = 'tt_v12';
+const SNOOZE_KEY = 'tt_snooze';
+const FU_KEY = 'tt_followup';
+
+let tenders = [];
+let editId = null;
+let fuId = null;
+let pFilter = '';
+
+// ── HELPERS ───────────────────────────────────────────
+function sg(id){ return STAGES.find(s => s.id === id) || STAGES[0]; }
+function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,5); }
+
+function fmt(d){
+  if(!d) return null;
+  const p = d.split('-');
+  if(p.length !== 3) return null;
+  const dt = new Date(+p[0], +p[1]-1, +p[2]);
+  return isNaN(dt) ? null : dt.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'2-digit'});
+}
+
+// Parse YYYY-MM-DD as local date — avoids UTC timezone offset bug
+function daysLeft(d){
+  if(!d) return null;
+  const p = d.split('-');
+  if(p.length !== 3) return null;
+  const dt = new Date(+p[0], +p[1]-1, +p[2]);
+  if(isNaN(dt)) return null;
+  const now = new Date(); now.setHours(0,0,0,0);
+  return Math.round((dt - now) / 86400000);
+}
+
+// ── STAGE AGE ────────────────────────────────────────
+function stageAge(t, sid){
+  if(!t.stageEnteredAt || !t.stageEnteredAt[sid]) return null;
+  const now = new Date(); now.setHours(0,0,0,0);
+  return Math.round((now.getTime() - t.stageEnteredAt[sid]) / 86400000);
+}
+
+// ── FOLLOW-UP ─────────────────────────────────────────
+function getFU(){ try{ return JSON.parse(localStorage.getItem(FU_KEY)||'{}'); }catch(e){ return {}; } }
+function saveFU(obj){ localStorage.setItem(FU_KEY, JSON.stringify(obj)); }
+
+function getFUFor(tid){
+  const fu = getFU();
+  return fu[tid] || null;
+}
+
+function openFollowUp(tid){
+  const t = tenders.find(function(x){ return x.id===tid; });
+  if(!t) return;
+  fuId = tid;
+  document.getElementById('fu-tender-name').textContent = t.no;
+  const existing = getFUFor(tid);
+  const infoEl   = document.getElementById('fu-current-info');
+  const clearBtn = document.getElementById('fu-clear-btn');
+  if(existing){
+    const due  = new Date(existing.until);
+    const dStr = due.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'2-digit'});
+    const todayMs = (function(){ const d=new Date(); d.setHours(0,0,0,0); return d.getTime(); })();
+    const dL   = Math.round((existing.until - todayMs) / 86400000);
+    const dLText = dL > 0 ? ' (in '+dL+'d)' : dL === 0 ? ' <span style="color:#fbbf24">due today</span>' : ' <span style="color:#f87171">overdue by '+Math.abs(dL)+'d</span>';
+    infoEl.innerHTML = '<div style="font-size:12px;color:var(--dim);font-family:var(--mono);'+
+      'background:var(--surface);border:1px solid var(--border2);border-radius:8px;padding:9px 12px;margin-bottom:12px">'+
+      'Reminder set: <b style="color:var(--accent2)">'+dStr+'</b>'+dLText+'</div>';
+    clearBtn.style.display = 'flex';
+  } else {
+    infoEl.innerHTML = '';
+    clearBtn.style.display = 'none';
+  }
+  document.getElementById('fu-days').value = existing ? existing.days : 3;
+  openM('modal-fu');
+}
+
+function setFuDays(n){
+  document.getElementById('fu-days').value = n;
+}
+
+function saveFollowUp(){
+  if(!fuId) return;
+  const days = parseInt(document.getElementById('fu-days').value);
+  if(isNaN(days) || days < 0){ toast('Enter 0 or more days', true); return; }
+  const fu = getFU();
+  const until = new Date(); until.setHours(0,0,0,0);
+  until.setDate(until.getDate() + days);  // days=0 → today
+  fu[fuId] = {until: until.getTime(), days: days, setOn: Date.now()};
+  saveFU(fu);
+  const dueStr = days === 0 ? 'today' : until.toLocaleDateString('en-IN',{day:'2-digit',month:'short'})+' ('+days+'d)';
+  toast('Follow-up set — due '+dueStr+' ✓');
+  closeM('modal-fu');
+  render(); refreshBadge();
+  // Rebuild actions modal if it's already open
+  const ma = document.getElementById('modal-actions');
+  if(ma && ma.classList.contains('open')) buildActionsModal();
+  schedulePush();
+}
+
+function clearFollowUp(){
+  if(!fuId) return;
+  const fu = getFU();
+  delete fu[fuId];
+  saveFU(fu);
+  toast('Reminder cleared');
+  closeM('modal-fu');
+  render(); refreshBadge();
+  const ma = document.getElementById('modal-actions');
+  if(ma && ma.classList.contains('open')) buildActionsModal();
+  schedulePush();
+}
+
+// ── STORAGE ───────────────────────────────────────────
+function load(){
+  try {
+    let raw = localStorage.getItem(KEY);
+    if(!raw) {
+      // Migrate from tt_v11 (old stages) to tt_v12 (new stages)
+      const oldRaw = localStorage.getItem('tt_v11') || localStorage.getItem('tt_v10') || localStorage.getItem('tt_v9');
+      if(oldRaw){
+        const oldMap = {19:2, 0:4, 1:5, 2:5, 3:11, 22:9, 4:6, 5:3, 6:13, 7:14,
+                        8:15, 9:23, 10:20, 11:17, 12:22, 13:21, 14:24, 15:14,
+                        16:28, 17:26, 18:30, 20:29, 21:27};
+        const old = JSON.parse(oldRaw);
+        old.forEach(function(t){
+          if(t.stages){
+            t.stages = t.stages.map(function(s){ return oldMap[s] !== undefined ? oldMap[s] : 30; });
+            // deduplicate
+            t.stages = t.stages.filter(function(v,i,a){ return a.indexOf(v)===i; });
+          }
+          if(t.stageEnteredAt){
+            const newSea = {};
+            Object.keys(t.stageEnteredAt).forEach(function(k){
+              const nk = oldMap[+k];
+              if(nk !== undefined) newSea[nk] = t.stageEnteredAt[k];
+            });
+            t.stageEnteredAt = newSea;
+          }
+        });
+        raw = JSON.stringify(old);
+        localStorage.setItem(KEY, raw);
+      }
+    }
+    tenders = JSON.parse(raw || '[]');
+  } catch(e) { tenders = []; }
+}
+function save(){ localStorage.setItem(KEY, JSON.stringify(tenders)); }
+
+// ── SNOOZE ────────────────────────────────────────────
+function getSnoozes(){ try{ return JSON.parse(localStorage.getItem(SNOOZE_KEY)||'{}'); }catch(e){ return {}; } }
+
+function isSnoozed(snoozeKey){
+  const s = getSnoozes();
+  const until = s[snoozeKey];
+  if(!until) return false;
+  const todayMs = (function(){ const d=new Date(); d.setHours(0,0,0,0); return d.getTime(); })();
+  if(todayMs >= until){
+    delete s[snoozeKey];
+    localStorage.setItem(SNOOZE_KEY, JSON.stringify(s));
+    return false;
+  }
+  return true;
+}
+
+function snoozeItem(snoozeKey){
+  const s = getSnoozes();
+  const until = new Date(); until.setHours(0,0,0,0); until.setDate(until.getDate()+3);
+  s[snoozeKey] = until.getTime();
+  localStorage.setItem(SNOOZE_KEY, JSON.stringify(s));
+  toast('Snoozed for 3 days ✓');
+  refreshBadge();
+  // If actions modal open, rebuild it
+  const m = document.getElementById('modal-actions');
+  if(m && m.classList.contains('open')) buildActionsModal();
+  schedulePush();
+}
+
+// ── FILTER ────────────────────────────────────────────
+function setPF(v){
+  pFilter = v;
+  document.getElementById('pf-all').style.borderColor  = (v==='')?'rgba(77,128,230,.4)':'';
+  document.getElementById('pf-all').style.color        = (v==='')?'var(--accent2)':'';
+  document.getElementById('pf-high').style.borderColor = (v==='high')?'rgba(224,90,78,.5)':'';
+  document.getElementById('pf-high').style.color       = (v==='high')?'var(--red)':'';
+  const pfAf = document.getElementById('pf-af');
+  if(pfAf){
+    pfAf.style.borderColor = (v==='af')?'rgba(77,128,230,.5)':'';
+    pfAf.style.color       = (v==='af')?'var(--accent)':'';
+  }
+  render();
+}
+
+// ── ACTIONS ENGINE ────────────────────────────────────
+// bucket: 'today' | 'week' | 'soon' | 'followup'
+function getActions(t){
+  const acts = [];
+  const stages = t.stages || [];
+
+  function push(bucket, icon, msg, sub, extra){
+    acts.push(Object.assign({bucket:bucket, icon:icon, msg:msg, sub:sub}, extra||{}));
+  }
+
+  function dateActions(dl, icon, label, dateStr){
+    if(dl === null) return;
+    if(dl < 0)
+      push('today', icon, label+' EXPIRED '+Math.abs(dl)+' day'+(Math.abs(dl)>1?'s':'')+' ago', 'Date: '+dateStr+' — act immediately');
+    else if(dl === 0)
+      push('today', icon, label+' is TODAY', 'Date: '+dateStr);
+    else if(dl <= 7)
+      push('week',  icon, label+' in '+dl+' day'+(dl>1?'s':''), 'Date: '+dateStr);
+    else if(dl <= 30)
+      push('soon',  icon, label+' in '+dl+' days', 'Date: '+dateStr);
+  }
+
+  // Bid validity — extra coverage: expired also shows in today
+  const vd = daysLeft(t.validity);
+  dateActions(vd, '🗓️', 'Bid Validity', fmt(t.validity)||'');
+
+  // Sale end
+  const sd = daysLeft(t.saleEnd);
+  if(sd !== null){
+    if(sd < 0 && stages.includes(4))
+      push('followup', '➡️', 'Sale has ended — move to next stage', 'Still in Sale End Awaited');
+    else if(sd >= 0)
+      dateActions(sd, '📌', 'Sale End', fmt(t.saleEnd)||'');
+  }
+
+  // Tech bid opening — only show if expired AND still in relevant stage, skip if moved on
+  const td = daysLeft(t.techBid);
+  if(td !== null){
+    if(td < 0 && stages.includes(5))
+      push('followup', '➡️', 'Tech Bid Opening date passed', 'Update stage to TBA and CBA at My End');
+    else if(td >= 0)
+      dateActions(td, '🔓', 'Tech Bid Opening', fmt(t.techBid)||'');
+    // if td < 0 and not in stage 1 — already moved on, don't show
+  }
+
+  // Price bid opening
+  const pd = daysLeft(t.priceBid);
+  if(pd !== null){
+    if(pd < 0 && (stages.includes(13)||stages.includes(14)))
+      push('followup', '➡️', 'Price Bid Opening date passed', 'Update stage accordingly');
+    else if(pd >= 0)
+      dateActions(pd, '💰', 'Price Bid Opening', fmt(t.priceBid)||'');
+  }
+
+  // Reverse auction
+  const rd = daysLeft(t.ra);
+  if(rd !== null){
+    if(rd < 0 && stages.includes(15))
+      push('followup', '➡️', 'Reverse Auction date passed', 'Update to next workflow stage');
+    else if(rd >= 0)
+      dateActions(rd, '🔄', 'Reverse Auction', fmt(t.ra)||'');
+  }
+
+  // TCQ End Date
+  const qd = daysLeft(t.tcq);
+  dateActions(qd, '📋', 'TCQ End Date', fmt(t.tcq)||'');
+
+  // Manual follow-up reminder
+  const fuEntry = getFUFor(t.id);
+  if(fuEntry){
+    const todayMs = (function(){ const d=new Date(); d.setHours(0,0,0,0); return d.getTime(); })();
+    const dLeft = Math.round((fuEntry.until - todayMs) / 86400000);
+    if(dLeft < 0)
+      push('today', '🔔', 'Follow-up overdue by '+Math.abs(dLeft)+' day'+(Math.abs(dLeft)>1?'s':''), 'Tap to review or reschedule', {isFollowUp:true});
+    else if(dLeft === 0)
+      push('today', '🔔', 'Follow-up due TODAY', 'Tap to review this tender', {isFollowUp:true});
+    else if(dLeft === 1)
+      push('week', '🔔', 'Follow-up due tomorrow', 'Due tomorrow', {isFollowUp:true});
+    else if(dLeft <= 7)
+      push('week', '🔔', 'Follow-up due in '+dLeft+' days', 'Due on '+new Date(fuEntry.until).toLocaleDateString('en-IN',{day:'2-digit',month:'short'}), {isFollowUp:true});
+    else
+      push('soon', '🔔', 'Follow-up due in '+dLeft+' days', 'Due on '+new Date(fuEntry.until).toLocaleDateString('en-IN',{day:'2-digit',month:'short'}), {isFollowUp:true});
+  }
+
+  return acts;
+}
+
+
+// ── PEOPLE ────────────────────────────────────────────
+const PEOPLE_KEY = 'tt_people';
+const ASSIGN_COLORS = ['#7B2FBE','#1a56db','#047857','#c0392b','#b45309','#0891b2','#be185d','#16a34a'];
+
+function getPeople(){ try{ return JSON.parse(localStorage.getItem(PEOPLE_KEY)||'[]'); }catch(e){ return []; } }
+function savePeople(arr){ localStorage.setItem(PEOPLE_KEY, JSON.stringify(arr)); }
+
+function personColor(pid){
+  const p = getPeople(); const idx = p.findIndex(function(x){ return x.id===pid; });
+  return ASSIGN_COLORS[idx % ASSIGN_COLORS.length] || '#7B2FBE';
+}
+function personById(pid){
+  if(!pid) return null;
+  return getPeople().find(function(x){ return x.id===pid; }) || {id:pid, name:'(removed)'};
+}
+function initials(name){
+  return name.trim().split(/\s+/).map(function(w){ return w[0]; }).join('').toUpperCase().slice(0,2);
+}
+
+function openPeople(){
+  renderPeopleList();
+  switchPeopleTab('manage');
+  openM('modal-people');
+}
+
+function switchPeopleTab(tab){
+  const isManage = tab === 'manage';
+  document.getElementById('people-tab-manage-body').style.display  = isManage  ? '' : 'none';
+  document.getElementById('people-tab-workload-body').style.display = !isManage ? '' : 'none';
+  const mBtn = document.getElementById('people-tab-manage');
+  const wBtn = document.getElementById('people-tab-workload');
+  mBtn.style.background   = isManage  ? 'var(--purple)' : 'var(--card2)';
+  mBtn.style.color        = isManage  ? '#fff'          : 'var(--dim)';
+  mBtn.style.border       = isManage  ? 'none'          : '1px solid var(--border2)';
+  wBtn.style.background   = !isManage ? 'var(--purple)' : 'var(--card2)';
+  wBtn.style.color        = !isManage ? '#fff'          : 'var(--dim)';
+  wBtn.style.border       = !isManage ? 'none'          : '1px solid var(--border2)';
+  if(!isManage) renderWorkload();
+}
+
+function renderWorkload(){
+  const people = getPeople();
+  const el = document.getElementById('people-workload');
+  if(!people.length){
+    el.innerHTML = '<div style="font-size:13px;color:var(--dim);padding:10px 0;">No people added yet.</div>';
+    return;
+  }
+
+  // Build workload map: pid → [ {tender, sid} ]
+  const workMap = {};
+  people.forEach(function(p){ workMap[p.id] = []; });
+
+  tenders.forEach(function(t){
+    const assigned = t.stageAssigned || {};
+    Object.keys(assigned).forEach(function(sidStr){
+      const pid = assigned[sidStr];
+      const sid = parseInt(sidStr);
+      if(workMap[pid] && t.stages.includes(sid)){
+        workMap[pid].push({ t: t, sid: sid });
+      }
+    });
+  });
+
+  el.innerHTML = people.map(function(p, i){
+    const col   = ASSIGN_COLORS[i % ASSIGN_COLORS.length];
+    const items = workMap[p.id] || [];
+    const count = items.length;
+
+    // Sort items by tender no
+    items.sort(function(a,b){ return a.t.no.localeCompare(b.t.no); });
+
+    const bodyId = 'wl-body-'+p.id;
+
+    const rows = items.map(function(item){
+      const s = sg(item.sid);
+      const isHigh = item.t.priority === 'high';
+      const isAF   = item.t.isAF;
+      return '<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;'+
+        'border-radius:8px;background:var(--surface);border:1px solid var(--border);'+
+        'margin-bottom:5px;cursor:pointer;" data-tid="'+item.t.id+'" class="wl-tender-row">'+
+        '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;flex-shrink:0;background:'+s.color+'"></span>'+
+        '<div style="flex:1;min-width:0;">'+
+          '<div style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--text)">'+
+            esc(item.t.no)+
+            (isHigh?' <span style="font-size:10px">🔴</span>':'')+
+            (isAF  ?' <span style="font-size:10px">🔷</span>':'')+
+          '</div>'+
+          '<div style="font-size:11px;color:var(--dim);font-family:var(--mono);margin-top:1px;">'+esc(s.label)+'</div>'+
+        '</div>'+
+        '<span style="font-size:11px;color:var(--dim)">›</span>'+
+      '</div>';
+    }).join('');
+
+    const emptyMsg = count === 0
+      ? '<div style="font-size:12px;color:var(--dim);padding:8px 0 4px;font-style:italic;">No active assignments</div>'
+      : '';
+
+    return '<div style="border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:8px;">'+
+      // Person header — tap to expand/collapse
+      '<div class="wl-person-hdr" data-pid="'+p.id+'" style="display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;">'+
+        '<div style="width:36px;height:36px;border-radius:50%;background:'+col+';flex-shrink:0;'+
+          'display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;">'+
+          esc(initials(p.name))+
+        '</div>'+
+        '<div style="flex:1;">'+
+          '<div style="font-size:14px;font-weight:700;color:var(--text);">'+esc(p.name)+'</div>'+
+          '<div style="font-size:11px;color:var(--dim);font-family:var(--mono);margin-top:1px;">'+
+            count+' active stage'+(count!==1?'s':'')+
+          '</div>'+
+        '</div>'+
+        // Mini bar showing workload weight
+        (count > 0
+          ? '<div style="display:flex;align-items:center;gap:6px;">'+
+              '<div style="width:60px;height:6px;border-radius:3px;background:var(--border);overflow:hidden;">'+
+                '<div style="height:100%;border-radius:3px;background:'+col+';width:'+Math.min(100, count*20)+'%;"></div>'+
+              '</div>'+
+              '<span style="font-size:12px;font-weight:700;color:'+col+';font-family:var(--mono);">'+count+'</span>'+
+            '</div>'
+          : '<span style="font-size:11px;color:var(--dim);font-family:var(--mono);">—</span>'
+        )+
+        '<span class="wl-chev" style="font-size:11px;color:var(--dim);margin-left:4px;">▸</span>'+
+      '</div>'+
+      // Expandable body
+      '<div class="wl-body" id="'+bodyId+'" style="display:none;padding:0 10px 10px;">'+
+        rows + emptyMsg +
+      '</div>'+
+    '</div>';
+  }).join('');
+
+  // Wire toggle for person rows
+  el.querySelectorAll('.wl-person-hdr').forEach(function(hdr){
+    hdr.addEventListener('click', function(){
+      const body = document.getElementById('wl-body-'+this.dataset.pid);
+      const chev = this.querySelector('.wl-chev');
+      const open = body.style.display !== 'none';
+      body.style.display = open ? 'none' : 'block';
+      chev.textContent   = open ? '▸' : '▾';
+    });
+  });
+
+  // Wire tender rows — open detail
+  el.querySelectorAll('.wl-tender-row').forEach(function(row){
+    row.addEventListener('click', function(){
+      closeM('modal-people');
+      openDetail(this.dataset.tid);
+    });
+  });
+}
+
+function renderPeopleList(){
+  const people = getPeople();
+  const el = document.getElementById('people-list');
+  if(!people.length){
+    el.innerHTML = '<div style="font-size:13px;color:var(--dim);padding:10px 0;">No people added yet.</div>';
+    return;
+  }
+  el.innerHTML = people.map(function(p, i){
+    const col = ASSIGN_COLORS[i % ASSIGN_COLORS.length];
+    const role = p.role || 'officer';
+    const roleLabel = role === 'manager' ? '👑 Manager' : role === 'assistant' ? '🤝 Assistant' : '🧑‍💼 Officer';
+    const roleBg = role === 'manager' ? 'rgba(180,83,9,.15)' : role === 'assistant' ? 'rgba(26,86,219,.12)' : 'rgba(123,47,190,.15)';
+    const roleCol = role === 'manager' ? 'var(--yellow)' : role === 'assistant' ? 'var(--accent)' : 'var(--purple)';
+    return '<div class="people-row">'+
+      '<div class="people-avatar" style="background:'+col+'">'+esc(initials(p.name))+'</div>'+
+      '<div style="flex:1;">'+
+        '<div class="people-name" style="margin-bottom:2px">'+esc(p.name)+'</div>'+
+        '<span style="font-size:10px;font-weight:700;font-family:var(--mono);background:'+roleBg+';color:'+roleCol+';padding:2px 7px;border-radius:5px;">'+roleLabel+'</span>'+
+      '</div>'+
+      '<button class="people-del" data-pid="'+p.id+'" title="Remove">×</button>'+
+    '</div>';
+  }).join('');
+  el.querySelectorAll('.people-del').forEach(function(btn){
+    btn.addEventListener('click', function(){ deletePerson(this.dataset.pid); });
+  });
+}
+
+let _newPersonRole = 'officer';
+function setNewPersonRole(role){
+  _newPersonRole = role;
+  const ob = document.getElementById('role-btn-officer');
+  const ab = document.getElementById('role-btn-assistant');
+  const mb = document.getElementById('role-btn-manager');
+  if(!ob||!mb) return;
+  // Reset all
+  [ob,ab,mb].forEach(function(b){ if(b){ b.style.background='var(--card2)'; b.style.color='var(--dim)'; b.style.border='1px solid var(--border2)'; }});
+  if(role==='officer')  { ob.style.background='var(--purple)'; ob.style.color='#fff'; ob.style.border='none'; }
+  if(role==='assistant'){ if(ab){ ab.style.background='var(--accent)'; ab.style.color='#fff'; ab.style.border='none'; } }
+  if(role==='manager')  { mb.style.background='rgba(180,83,9,.8)'; mb.style.color='#fff'; mb.style.border='none'; }
+}
+
+function addPerson(){
+  const inp = document.getElementById('f-person-name');
+  const name = inp.value.trim();
+  if(!name){ toast('Enter a name', true); return; }
+  const people = getPeople();
+  if(people.find(function(p){ return p.name.toLowerCase()===name.toLowerCase(); })){
+    toast('Person already exists', true); return;
+  }
+  people.push({id: uid(), name: name, role: _newPersonRole});
+  savePeople(people);
+  inp.value = '';
+  _newPersonRole = 'officer'; // reset to default
+  setNewPersonRole('officer');
+  renderPeopleList();
+  render();
+  schedulePush();
+  toast(name+' added ✓');
+}
+
+function deletePerson(pid){
+  let people = getPeople();
+  people = people.filter(function(p){ return p.id!==pid; });
+  savePeople(people);
+  // Remove assignments and history entries referencing this person
+  tenders.forEach(function(t){
+    if(t.stageAssigned){
+      Object.keys(t.stageAssigned).forEach(function(k){
+        if(t.stageAssigned[k]===pid) delete t.stageAssigned[k];
+      });
+    }
+    // Keep history entries but we leave them as-is (person name shown as "Removed user")
+  });
+  save(); renderPeopleList(); render();
+  schedulePush();
+  toast('Removed');
+}
+
+// ── ASSIGN PERSON TO STAGE ────────────────────────────
+let _assignTid = null, _assignSid = null;
+
+function openAssign(tid, sid){
+  const t = tenders.find(function(x){ return x.id===tid; });
+  if(!t) return;
+  _assignTid = tid; _assignSid = sid;
+  const s = sg(sid);
+  document.getElementById('assign-modal-title').textContent = 'Assign — '+s.label;
+  document.getElementById('assign-stage-info').textContent = 'Tender: '+t.no;
+
+  const allPeople = getPeople();
+  // Stage assignment is for assistants only — officers own tenders, assistants do the work
+  const people = allPeople.filter(function(p){ return p.role === 'assistant'; });
+  const current = (t.stageAssigned||{})[sid] || null;
+  const el = document.getElementById('assign-people-list');
+
+  if(!people.length){
+    const hasAnyPeople = allPeople.length > 0;
+    el.innerHTML = '<div style="font-size:13px;color:var(--dim);padding:10px 0;line-height:1.6;">'+
+      (hasAnyPeople
+        ? 'No <b>Assistants</b> added yet.<br><span id="assign-add-people-link" style="color:var(--accent);cursor:pointer">Add an Assistant in People →</span>'
+        : 'No people defined. <span id="assign-add-people-link" style="color:var(--accent);cursor:pointer">Add people →</span>')+
+    '</div>';
+    const link = document.getElementById('assign-add-people-link');
+    if(link) link.addEventListener('click', function(){ closeM('modal-assign'); openPeople(); });
+    openM('modal-assign');
+    return;
+  }
+
+  el.innerHTML =
+    '<div class="assign-opt" data-pid="" style="display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:10px;'+
+      'border:1px solid '+(current===null?'var(--accent)':'var(--border)')+';background:'+(current===null?'rgba(26,86,219,.06)':'var(--surface)')+';cursor:pointer;margin-bottom:8px;">'+
+      '<div style="width:34px;height:34px;border-radius:50%;background:var(--muted);border:1px dashed var(--border2);display:flex;align-items:center;justify-content:center;font-size:14px">–</div>'+
+      '<div style="flex:1;font-size:14px;font-weight:500;color:var(--dim)">Unassigned</div>'+
+      (current===null?'<span style="color:var(--accent);font-size:12px;font-weight:700">✓ Current</span>':'')+
+    '</div>'+
+    people.map(function(p){
+      const col = ASSIGN_COLORS[allPeople.indexOf(p) % ASSIGN_COLORS.length];
+      const isCurrent = current === p.id;
+      return '<div class="assign-opt" data-pid="'+p.id+'" style="display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:10px;'+
+        'border:1px solid '+(isCurrent?'var(--accent)':'var(--border)')+';background:'+(isCurrent?'rgba(26,86,219,.06)':'var(--surface)')+';cursor:pointer;margin-bottom:8px;">'+
+        '<div style="width:34px;height:34px;border-radius:50%;background:'+col+';display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff">'+esc(initials(p.name))+'</div>'+
+        '<div style="flex:1;">'+
+          '<div style="font-size:14px;font-weight:600;color:var(--text)">'+esc(p.name)+'</div>'+
+          '<div style="font-size:10px;font-weight:700;font-family:var(--mono);color:var(--accent);background:rgba(26,86,219,.1);display:inline-block;padding:1px 6px;border-radius:4px;margin-top:2px;">🤝 Assistant</div>'+
+        '</div>'+
+        (isCurrent?'<span style="color:var(--accent);font-size:12px;font-weight:700">✓ Current</span>':'')+
+      '</div>';
+    }).join('');
+
+  // Wire person selection via event listeners — no onclick strings needed
+  el.querySelectorAll('.assign-opt').forEach(function(row){
+    row.addEventListener('click', function(){
+      const pid = this.dataset.pid || null;
+      assignPerson(pid === '' ? null : pid);
+    });
+  });
+
+  openM('modal-assign');
+}
+
+function assignPerson(pid){
+  const t = tenders.find(function(x){ return x.id===_assignTid; });
+  if(!t) return;
+
+  // Keep old flat map for chip display (current assignee per stage)
+  if(!t.stageAssigned) t.stageAssigned = {};
+
+  // New: full history log per stage
+  if(!t.stageAssignHistory) t.stageAssignHistory = {};
+  if(!t.stageAssignHistory[_assignSid]) t.stageAssignHistory[_assignSid] = [];
+
+  if(pid === null){
+    // Unassign: log an unassign event and clear current
+    delete t.stageAssigned[_assignSid];
+    t.stageAssignHistory[_assignSid].push({
+      pid: null,
+      assignedAt: Date.now()
+    });
+  } else {
+    // Assign: only log if it's a different person than current
+    const prev = t.stageAssigned[_assignSid] || null;
+    t.stageAssigned[_assignSid] = pid;
+    if(pid !== prev){
+      t.stageAssignHistory[_assignSid].push({
+        pid: pid,
+        assignedAt: Date.now()
+      });
+    }
+  }
+
+  const _atd = tenders.find(function(x){ return x.id===_assignTid; });
+  if(_atd) _atd.updatedAt = Date.now();
+  save(); render();
+  closeM('modal-assign');
+  const det = document.getElementById('modal-detail');
+  if(det && det.classList.contains('open')){ openDetail(_assignTid); }
+  const pName = pid ? (personById(pid)||{name:'?'}).name : 'Unassigned';
+  toast('Assigned: '+pName);
+  schedulePush();
+}
+
+// ── BADGE ─────────────────────────────────────────────
+function refreshBadge(){
+  let todayCount = 0, total = 0;
+  tenders.forEach(function(t){
+    if(t.stages && t.stages.length===1 && t.stages[0]===30) return;
+    getFilteredActions(t).forEach(function(a){
+      total++;
+      if(a.bucket==='today') todayCount++;
+    });
+  });
+  const badge = document.getElementById('today-badge');
+  const btn   = document.getElementById('btn-today');
+  if(!badge || !btn) return;
+  const count = todayCount || total;
+  badge.textContent = count;
+  if(count > 0){ btn.classList.add('lit'); }
+  else { btn.classList.remove('lit'); }
+}
+
+// ── DONE ITEMS (persisted to localStorage, auto-expire at midnight) ─────────
+const DONE_KEY = 'tt_done';
+let _undoTimer = null;
+
+function _todayStr(){
+  const d = new Date();
+  return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();
+}
+
+function getDoneItems(){
+  try{
+    const raw = JSON.parse(localStorage.getItem(DONE_KEY)||'{}');
+    // Purge keys that aren't from today
+    const today = _todayStr();
+    const cleaned = {};
+    Object.keys(raw).forEach(function(k){ if(raw[k] === today) cleaned[k] = today; });
+    // If anything was purged, write cleaned version back
+    if(Object.keys(cleaned).length !== Object.keys(raw).length){
+      localStorage.setItem(DONE_KEY, JSON.stringify(cleaned));
+    }
+    return cleaned;
+  } catch(e){ return {}; }
+}
+
+function saveDoneItems(obj){ localStorage.setItem(DONE_KEY, JSON.stringify(obj)); }
+
+function markActionDone(key, extra){
+  if(typeof extra === 'string'){ try{ extra = JSON.parse(extra); }catch(e){ extra = {}; } }
+  extra = extra || {};
+
+  // 1. Persist done state
+  const done = getDoneItems();
+  done[key] = _todayStr();
+  saveDoneItems(done);
+
+  // 2. Follow-up reminder → clear it so it doesn't regenerate tomorrow
+  if(extra.isFollowUp && extra.tenderId){
+    const fu = getFU();
+    delete fu[extra.tenderId];
+    saveFU(fu);
+  }
+
+  // 3. Stage nudge → auto-snooze 1 day so it doesn't reappear tomorrow
+  if(extra.snoozeKey){
+    const s = getSnoozes();
+    const until = new Date(); until.setHours(0,0,0,0); until.setDate(until.getDate()+1);
+    s[extra.snoozeKey] = until.getTime();
+    localStorage.setItem(SNOOZE_KEY, JSON.stringify(s));
+  }
+
+  // 4. Show undo toast — store context on the button via data attribute
+  const el = document.getElementById('toast');
+  const extraSafe = JSON.stringify(extra);
+  el.innerHTML =
+    '<span>✓ Marked done</span>' +
+    '<button id="undo-done-btn" style="background:none;border:none;color:var(--accent2);font-size:13px;font-weight:700;cursor:pointer;padding:0 0 0 10px;text-decoration:underline">Undo</button>';
+  const undoBtn = el.querySelector('#undo-done-btn');
+  undoBtn.dataset.key   = key;
+  undoBtn.dataset.extra = extraSafe;
+  undoBtn.addEventListener('click', function(){
+    undoActionDone(this.dataset.key, this.dataset.extra);
+  });
+  el.style.borderColor = 'rgba(46,168,120,.4)';
+  el.classList.add('show');
+  clearTimeout(_undoTimer);
+  _undoTimer = setTimeout(function(){ el.classList.remove('show'); }, 4000);
+
+  render(); refreshBadge(); buildActionsModal();
+}
+
+function undoActionDone(key, extra){
+  if(typeof extra === 'string'){ try{ extra = JSON.parse(extra); }catch(e){ extra = {}; } }
+  extra = extra || {};
+
+  // Remove from done
+  const done = getDoneItems();
+  delete done[key];
+  saveDoneItems(done);
+
+  // Restore follow-up entry if it was cleared
+  if(extra.isFollowUp && extra.tenderId && extra.fuEntry){
+    const fu = getFU();
+    fu[extra.tenderId] = extra.fuEntry;
+    saveFU(fu);
+  }
+
+  // Un-snooze stage nudge
+  if(extra.snoozeKey){
+    const s = getSnoozes();
+    delete s[extra.snoozeKey];
+    localStorage.setItem(SNOOZE_KEY, JSON.stringify(s));
+  }
+
+  const el = document.getElementById('toast');
+  el.classList.remove('show');
+  render(); refreshBadge(); buildActionsModal();
+}
+
+// ── COLLAPSIBLE STATE ─────────────────────────────────
+const _sectionOpen = {today:true, week:false, soon:false, followup:false};
+
+function toggleSection(g){
+  _sectionOpen[g] = !_sectionOpen[g];
+  buildActionsModal();
+}
+
+// ── BUILD ACTIONS MODAL ───────────────────────────────
+function buildActionsModal(){
+  const body = document.getElementById('actions-body');
+  if(!body) return;
+  const today = new Date().toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+
+  const allItems = [];
+  tenders.forEach(function(t){
+    if(t.stages && t.stages.length===1 && t.stages[0]===30) return;
+    getFilteredActions(t).forEach(function(a){ allItems.push({a:a, t:t}); });
+  });
+
+  // Badge
+  const todayCount = allItems.filter(function(x){ return x.a.bucket==='today'; }).length;
+  const badge = document.getElementById('today-badge');
+  const btn   = document.getElementById('btn-today');
+  if(badge && btn){
+    badge.textContent = todayCount || allItems.length;
+    if(allItems.length > 0) btn.classList.add('lit');
+    else btn.classList.remove('lit');
+  }
+
+  if(!allItems.length){
+    body.innerHTML =
+      '<div class="actions-date">'+today+'</div>'+
+      '<div class="no-actions">'+
+        '<div class="no-actions-icon">✅</div>'+
+        '<div class="no-actions-title">All clear!</div>'+
+        '<div class="no-actions-sub">No actions due today or upcoming deadlines.</div>'+
+      '</div>';
+    return;
+  }
+
+  // Group into 4 strict buckets — filter done items
+  const _doneNow = getDoneItems();
+  const groups = {today:[], week:[], soon:[], followup:[]};
+  allItems.forEach(function(x){
+    const key = x.t.id + '_' + x.a.msg;
+    if(_doneNow[key]) return;  // hide done items
+    (groups[x.a.bucket] || groups.followup).push(x);
+  });
+
+  const groupMeta = {
+    today:    {icon:'🔴', title:'Due Today',          cls:'s-today'},
+    week:     {icon:'⚠️', title:'This Week',          cls:'s-week'},
+    soon:     {icon:'📅', title:'Coming Up (8–30d)',  cls:'s-soon'},
+    followup: {icon:'📋', title:'Follow Up',          cls:'s-followup'},
+  };
+
+  function renderItem(x){
+    const a = x.a, t = x.t;
+    const canSnooze = a.snoozeKey;
+    const key = t.id + '_' + a.msg;
+    const isToday = a.bucket === 'today';
+
+    // Build extra context object for smart done handling
+    const extra = {};
+    if(a.isFollowUp){
+      extra.isFollowUp = true;
+      extra.tenderId = t.id;
+      const fe = getFUFor(t.id);
+      if(fe) extra.fuEntry = fe;
+    }
+    if(a.snoozeKey) extra.snoozeKey = a.snoozeKey;
+
+    const safeid = 'done-'+key.replace(/[^a-z0-9]/gi,'_');
+
+    // Build assignee chips — show one per active stage that has an assignee
+    const assigned = t.stageAssigned || {};
+    const assigneeHtml = (t.stages || []).reduce(function(acc, sid){
+      const pid = assigned[sid];
+      if(!pid) return acc;
+      const p = personById(pid);
+      if(!p) return acc;
+      const col = personColor(pid);
+      const s = sg(sid);
+      return acc +
+        '<span style="display:inline-flex;align-items:center;gap:4px;'+
+          'background:'+col+'18;border:1px solid '+col+'44;'+
+          'border-radius:20px;padding:2px 7px 2px 3px;'+
+          'font-size:10px;font-weight:700;margin-right:4px;white-space:nowrap;">'+
+          '<span style="width:16px;height:16px;border-radius:50%;background:'+col+';'+
+            'display:inline-flex;align-items:center;justify-content:center;'+
+            'font-size:8px;font-weight:800;color:#fff;flex-shrink:0;">'+
+            esc(initials(p.name))+
+          '</span>'+
+          '<span style="color:'+col+'">'+esc(p.name)+'</span>'+
+        '</span>';
+    }, '');
+
+    const assigneeRow = assigneeHtml
+      ? '<div style="margin-top:4px;display:flex;flex-wrap:wrap;align-items:center;">'+assigneeHtml+'</div>'
+      : '';
+
+    const html = '<div class="ai" id="ai-'+key.replace(/[^a-z0-9]/gi,'_')+'">' +
+      '<div class="ai-icon">'+a.icon+'</div>'+
+      '<div class="ai-body" onclick="closeM(\'modal-actions\');openDetail(\''+t.id+'\')">' +
+        '<div class="ai-tender">'+esc(t.no)+(t.priority==='high'?' 🔴':'')+(t.isAF?' 🔷':'')+'</div>'+
+        '<div class="ai-msg">'+a.msg+'</div>'+
+        '<div class="ai-sub">'+a.sub+'</div>'+
+        assigneeRow+
+      '</div>'+
+      (isToday
+        ? '<button class="done-btn" id="'+safeid+'" title="Hide for today">✓ Done</button>'
+        : (canSnooze
+            ? '<button class="snooze-btn" onclick="snoozeItem(\''+a.snoozeKey+'\')">3d ✓</button>'
+            : '<div class="ai-arrow" onclick="closeM(\'modal-actions\');openDetail(\''+t.id+'\')">›</div>'
+          )
+      )+
+    '</div>';
+
+    // Wire up done button after HTML is inserted — stored in a pending list
+    if(isToday){
+      _pendingDoneBtns.push({id: safeid, key: key, extra: extra});
+    }
+    return html;
+  }
+
+  // Track done buttons that need event listeners attached after innerHTML
+  const _pendingDoneBtns = [];
+
+  let html = '<div class="actions-date">'+today+'</div>'
+    + '<div style="font-size:11px;color:var(--dim);font-family:var(--mono);text-align:center;margin-bottom:14px;line-height:1.5;">'
+    + 'Date items reappear till stage/date updated · Follow-ups clear on done'
+    + '</div>';
+  ['today','week','soon','followup'].forEach(function(g){
+    const all_in_group = allItems.filter(function(x){ return x.a.bucket===g; }).length;
+    if(!all_in_group) return;
+    const visible = groups[g];
+    const done_count = all_in_group - visible.length;    const m = groupMeta[g];
+    const open = _sectionOpen[g];
+    html += '<div class="ag '+m.cls+' '+(open?'ag-open':'')+'">'
+      + '<div class="ag-header" onclick="toggleSection(\''+g+'\')" style="cursor:pointer">'
+        + '<span class="ag-title">'+m.icon+' '+m.title+'</span>'
+        + '<span style="display:flex;align-items:center;gap:6px">'
+          + (done_count > 0 ? '<span style="font-size:10px;color:var(--green);font-family:var(--mono)">'+done_count+' done</span>' : '')
+          + '<span class="ag-count">'+all_in_group+'</span>'
+          + '<span class="ag-chevron">'+(open?'▾':'▸')+'</span>'
+        + '</span>'
+      + '</div>';
+    if(open){
+      if(visible.length === 0){
+        html += '<div style="font-size:12px;color:var(--green);padding:10px 4px;font-family:var(--mono)">✓ All items in this section are done</div>';
+      } else {
+        visible.forEach(function(x){ html += renderItem(x); });
+      }
+    }
+    html += '</div>';
+  });
+
+  body.innerHTML = html;
+
+  // Attach event listeners to done buttons (avoids all onclick string escaping bugs)
+  _pendingDoneBtns.forEach(function(item){
+    const btn = document.getElementById(item.id);
+    if(btn){
+      btn.addEventListener('click', function(e){
+        e.stopPropagation();
+        markActionDone(item.key, item.extra);
+      });
+    }
+  });
+}
+
+function openActions(){
+  buildActionsModal();
+  openM('modal-actions');
+}
+
+// ── EXPIRING BIDS ─────────────────────────────────────
+function openExpiring(){
+  const expList = tenders
+    .map(function(t){ return {t:t, dl:daysLeft(t.validity)}; })
+    .filter(function(x){ return x.dl !== null && x.dl <= 30; })
+    .sort(function(a,b){ return a.dl - b.dl; });
+
+  let html = '';
+  if(!expList.length){
+    html = '<div class="no-actions"><div class="no-actions-icon">✅</div><div class="no-actions-title">No expiring bids</div></div>';
+  } else {
+    expList.forEach(function(x){
+      const t = x.t, dl = x.dl;
+      const isExpired = dl < 0;
+      const isUrgent  = dl >= 0 && dl <= 7;
+      const col = isExpired ? 'var(--red)' : isUrgent ? 'var(--yellow)' : 'var(--accent)';
+      const bg  = isExpired ? 'rgba(192,57,43,.07)' : isUrgent ? 'rgba(180,83,9,.06)' : 'rgba(26,86,219,.05)';
+      const bdr = isExpired ? 'rgba(192,57,43,.25)' : isUrgent ? 'rgba(180,83,9,.2)' : 'rgba(26,86,219,.15)';
+      const label = isExpired ? 'EXPIRED '+Math.abs(dl)+'d ago'
+                  : dl === 0  ? 'Expires TODAY'
+                  : 'Expires in '+dl+'d';
+      html +=
+        '<div style="display:flex;align-items:center;gap:12px;padding:11px 13px;border-radius:12px;'+
+          'background:'+bg+';border:1px solid '+bdr+';margin-bottom:7px;cursor:pointer" onclick="closeM(\'modal-expiring\');openDetail(\''+t.id+'\')">'+
+          '<div style="flex:1;min-width:0">'+
+            '<div style="font-family:var(--mono);font-size:15px;font-weight:700;color:var(--text)">'+esc(t.no)+(t.priority==='high'?' 🔴':'')+'</div>'+
+            '<div style="font-size:11px;color:var(--dim);margin-top:2px;font-family:var(--mono)">Validity: '+fmt(t.validity)+'</div>'+
+          '</div>'+
+          '<div style="font-family:var(--mono);font-size:12px;font-weight:700;color:'+col+';white-space:nowrap">'+label+'</div>'+
+        '</div>';
+    });
+  }
+  document.getElementById('expiring-body').innerHTML = html;
+  openM('modal-expiring');
+}
+
+// ── RENDER BOARD ──────────────────────────────────────
+function render(){
+  const _fuCache = getFU();  // parse localStorage once per render, not per chip
+  const _todayStart = (function(){ const d=new Date(); d.setHours(0,0,0,0); return d.getTime(); })();
+  const q = document.getElementById('search').value.toLowerCase().trim();
+  // Profile-based ownership filter
+  const _viewAs = getViewingAs();
+  const list = tenders.filter(function(t){
+    // If viewing as an officer, only show their tenders (owner matches) or unowned
+    if(_viewAs){
+      const p = personById(_viewAs);
+      const role = p ? (p.role || 'officer') : 'officer';
+      if(role === 'officer'){
+        // Officers see only their owned tenders
+        if(t.owner !== _viewAs) return false;
+      } else if(role === 'assistant'){
+        // Assistants see only tenders where they are assigned to at least one active stage
+        const assigned = t.stageAssigned || {};
+        const hasStage = (t.stages||[]).some(function(sid){ return assigned[sid] === _viewAs; });
+        if(!hasStage) return false;
+      }
+    }
+    if(pFilter === 'high' && t.priority !== 'high') return false;
+    if(pFilter === 'af'   && !t.isAF) return false;
+    if(!q) return true;
+    return t.no.toLowerCase().includes(q) ||
+           (t.notes||'').toLowerCase().includes(q) ||
+           (t.emd||'').toString().includes(q);
+  });
+
+  const activeStages = new Set(list.flatMap(function(t){ return t.stages; }));
+  const expiring = list.filter(function(t){ const d=daysLeft(t.validity); return d!==null&&d>=0&&d<=30; }).length;
+  document.getElementById('s-total').textContent  = list.length;
+  document.getElementById('s-stages').textContent = activeStages.size;
+  document.getElementById('s-expiry').textContent = expiring;
+  const highCount = list.filter(function(t){ return t.priority==='high'; }).length;
+  const sh = document.getElementById('s-high'); if(sh) sh.textContent = highCount;
+  const afCount = list.filter(function(t){ return t.isAF === true; }).length;
+  const sa = document.getElementById('s-af'); if(sa) sa.textContent = afCount;
+  const ec = document.getElementById('s-expiry-chip');
+  if(ec){ expiring ? ec.classList.remove('hidden') : ec.classList.add('hidden'); }
+  refreshBadge();
+
+  const board = document.getElementById('board');
+  if(!list.length){
+    board.innerHTML =
+      '<div class="board-empty">'+
+        '<div class="board-empty-icon">📋</div>'+
+        '<div class="board-empty-title">'+ (_viewAs ? 'No tenders assigned to you yet' : 'No tenders yet') +'</div>'+
+        '<div class="board-empty-sub">'+ (_viewAs ? 'Ask your manager to assign tenders to you' : 'Tap + Add to get started') +'</div>'+
+      '</div>';
+    return;
+  }
+
+  const map = {};
+  STAGES.forEach(function(s){ map[s.id]=[]; });
+  list.forEach(function(t){ t.stages.forEach(function(sid){ if(map[sid]) map[sid].push(t); }); });
+
+  // Build board using DOM (needed for drag/drop event listeners)
+  board.innerHTML = '';
+  STAGES.forEach(function(s){
+    const items = map[s.id];
+    const has   = items.length > 0;
+
+    const srow = document.createElement('div');
+    srow.className = 'srow ' + (has ? 'has-items' : 'no-items');
+    srow.dataset.sid = s.id;
+
+    // Label
+    const label = document.createElement('div');
+    label.className = 'srow-label';
+    label.innerHTML =
+      '<span class="srow-dot" style="background:'+s.color+';opacity:'+(has?1:.25)+';'+(has?'box-shadow:0 0 6px '+s.color+'66':'')+'""></span>'+
+      '<span class="srow-name">'+s.label+'</span>'+
+      '<span class="srow-cnt">'+items.length+'</span>';
+    srow.appendChild(label);
+
+    // Chips container — drop target
+    const chipsDiv = document.createElement('div');
+    chipsDiv.className = 'srow-chips';
+    chipsDiv.dataset.sid = s.id;
+
+    if(has){
+      items.forEach(function(t){
+        const w = daysLeft(t.validity) !== null && daysLeft(t.validity) <= 30;
+        const h = t.priority === 'high';
+        const age = stageAge(t, s.id);
+        const ageLabel = age === null ? '\u2013' : (age === 0 ? '0d' : age + 'd');
+        const fuEntry = _fuCache[t.id] || null;
+        const fuDue = fuEntry && fuEntry.until <= _todayStart;
+        const fuCls = fuDue ? ' fu-due' : '';
+        const bellContent = ageLabel + (fuDue ? ' \uD83D\uDD14' : '');
+
+        const wrap = document.createElement('div');
+        wrap.className = 'tchip-wrap';
+        wrap.dataset.tid = t.id;
+        wrap.dataset.sid = s.id;
+
+        const chip = document.createElement('span');
+        const assignedPid = (t.stageAssigned||{})[s.id] || null;
+        const assignedP = assignedPid ? personById(assignedPid) : null;
+
+        // Profile highlighting: dim chips not belonging to current user
+        const viewAs = getViewingAs();
+        const isMine = viewAs && assignedPid === viewAs;
+        // No dimming on board — everyone sees all tenders
+        // Profile only affects Today tab filtering
+        chip.className = 'tchip' + (h ? ' p-high' : '') + (isMine ? ' p-mine' : '');
+
+        const assigneeBadge = assignedP
+          ? ' <span class="tchip-assignee" style="background:'+personColor(assignedPid)+'" title="'+esc(assignedP.name)+'">'+esc(initials(assignedP.name))+'</span>'
+          : '';
+        chip.innerHTML = '<span class="tchip-dot" style="background:' + s.color + ';box-shadow:0 0 4px ' + s.color + '88"></span>'
+          + esc(t.no)
+          + (t.isAF ? ' <span style="font-size:10px" title="AF File">🔷</span>' : '')
+          + (w ? ' <span style="font-size:10px">\u26A0</span>' : '')
+          + assigneeBadge;
+        chip.addEventListener('click', function(){ openDetail(t.id); });
+
+        const fu = document.createElement('span');
+        fu.className = 'tchip-fu' + fuCls;
+        fu.textContent = bellContent;
+        fu.addEventListener('click', function(e){ e.stopPropagation(); openFollowUp(t.id); });
+
+        wrap.appendChild(chip);
+        wrap.appendChild(fu);
+        initDrag(wrap);
+        chipsDiv.appendChild(wrap);
+      });
+    }
+
+    srow.appendChild(chipsDiv);
+    board.appendChild(srow);
+  });
+}
+
+// ── DETAIL ────────────────────────────────────────────
+function openDetail(id){
+  const t = tenders.find(function(x){ return x.id===id; });
+  if(!t) return;
+  document.getElementById('btn-edit-d').onclick     = function(){ closeM('modal-detail'); openEdit(id); };
+  document.getElementById('btn-del-d').onclick      = function(){ closeM('modal-detail'); openDel(id); };
+  document.getElementById('btn-followup-d').onclick = function(){ openFollowUp(id); };
+
+  const vdl = daysLeft(t.validity);
+  const vc  = vdl===null?'':vdl<0?'danger':vdl<=14?'danger':vdl<=30?'warn':'';
+
+  const dateRows = [
+    ['Sale End',        t.saleEnd,  ''],
+    ['Tech Bid Opening',t.techBid,  ''],
+    ['Price Bid Opening',t.priceBid,''],
+    ['Reverse Auction', t.ra,       ''],
+    ['Bid Validity',    t.validity, vc],
+    ['TCQ End Date',    t.tcq,      ''],
+  ].filter(function(r){ return !!r[1]; });
+
+  const acts = getFilteredActions(t);
+  let actHtml = '';
+  if(acts.length){
+    actHtml = '<div class="detail-sec">Actions Needed</div>';
+    acts.forEach(function(a){
+      const bg  = a.bucket==='today'   ? 'rgba(192,57,43,.07)'
+                : a.bucket==='week'    ? 'rgba(180,83,9,.06)'
+                : a.bucket==='soon'    ? 'rgba(26,86,219,.04)'
+                : 'var(--surface)';
+      const bdr = a.bucket==='today'   ? 'rgba(192,57,43,.22)'
+                : a.bucket==='week'    ? 'rgba(180,83,9,.18)'
+                : a.bucket==='soon'    ? 'rgba(26,86,219,.15)'
+                : 'var(--border2)';
+      const col = a.bucket==='today'   ? 'var(--red)'
+                : a.bucket==='week'    ? 'var(--yellow)'
+                : a.bucket==='soon'    ? 'var(--accent2)'
+                : 'var(--text)';
+      actHtml +=
+        '<div style="display:flex;gap:8px;align-items:flex-start;padding:9px 12px;margin-bottom:6px;'+
+          'border-radius:8px;background:'+bg+';border:1px solid '+bdr+'">'+
+          '<span style="font-size:14px;flex-shrink:0">'+a.icon+'</span>'+
+          '<div>'+
+            '<div style="font-size:12px;color:'+col+';font-weight:600;margin-bottom:2px">'+a.msg+'</div>'+
+            '<div style="font-size:11px;color:var(--dim);font-family:var(--mono)">'+a.sub+'</div>'+
+          '</div>'+
+        '</div>';
+    });
+  }
+
+  let datesHtml = '';
+  if(dateRows.length){
+    datesHtml = '<div class="detail-sec">Dates</div><div class="detail-dates">';
+    dateRows.forEach(function(r){
+      const extra = r[2]==='danger'&&vdl!==null ? (vdl<0?' (expired)':' ('+vdl+'d)') :
+                    r[2]==='warn' ? ' ('+vdl+'d)' : '';
+      datesHtml += '<div><div class="dd-l">'+r[0]+'</div><div class="dd-v '+r[2]+'">'+fmt(r[1])+(extra||'—'.slice(fmt(r[1])?1:0))+'</div></div>';
+    });
+    datesHtml += '</div>';
+  }
+
+  // Ownership banner
+  const _curPid = getCurrentProfile();
+  const _curPerson = _curPid ? personById(_curPid) : null;
+  const _curIsOfficer = _curPerson && _curPerson.role !== 'manager';
+  const _curIsManager = _curPerson && _curPerson.role === 'manager';
+  const _owner = t.owner ? personById(t.owner) : null;
+  const officers = getPeople().filter(function(p){ return (p.role||'officer') === 'officer'; });
+
+  let ownerBanner = '';
+  if(_curIsManager){
+    // Manager always sees ownership + can change it
+    const ownerCol = t.owner ? personColor(t.owner) : null;
+    ownerBanner =
+      '<div style="display:flex;align-items:center;gap:8px;padding:10px 12px;'+
+      'background:var(--muted);border:1px solid var(--border);border-radius:10px;margin-bottom:12px;">'+
+        '<span style="font-size:11px;color:var(--dim);font-family:var(--mono);flex-shrink:0;">Owner:</span>'+
+        '<div style="flex:1;">'+
+          (_owner
+            ? '<span style="display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:700;color:var(--text);">'+
+                '<span style="width:20px;height:20px;border-radius:50%;background:'+ownerCol+';display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:#fff;">'+esc(initials(_owner.name))+'</span>'+
+                esc(_owner.name)+
+              '</span>'
+            : '<span style="font-size:12px;color:var(--yellow);">⚠ Unowned — not visible to officers</span>')+
+        '</div>'+
+        '<select id="owner-select" style="background:var(--surface);border:1px solid var(--border2);border-radius:8px;padding:5px 8px;font-size:12px;color:var(--text);font-family:var(--mono);cursor:pointer;">'+
+          '<option value="">Change owner…</option>'+
+          '<option value="__none__">Remove owner</option>'+
+          officers.map(function(op){
+            return '<option value="'+op.id+'"'+(t.owner===op.id?' selected':'')+'>'+esc(op.name)+'</option>';
+          }).join('')+
+        '</select>'+
+      '</div>';
+  } else if(!t.owner && _curIsOfficer){
+    ownerBanner = '<div style="padding:10px 14px;background:rgba(180,83,9,.1);border:1px solid rgba(180,83,9,.25);border-radius:10px;margin-bottom:12px;font-size:12px;color:var(--yellow);font-family:var(--mono);">'+
+      '⚠ Not assigned to you — contact your manager'+
+    '</div>';
+  }
+
+  document.getElementById('detail-body').innerHTML =
+    ownerBanner+
+    '<div class="detail-no">'+esc(t.no)+'</div>'+
+    '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">'+
+    (t.priority==='high'?
+      '<div style="display:inline-flex;align-items:center;gap:6px;background:rgba(185,28,28,.15);'+
+        'border:1px solid rgba(239,68,68,.4);border-radius:7px;padding:5px 11px;font-size:12px;'+
+        'font-weight:600;color:#fca5a5">🔴 High Priority</div>':'')+
+    (t.isAF?
+      '<div style="display:inline-flex;align-items:center;gap:6px;background:rgba(59,158,255,.12);'+
+        'border:1px solid rgba(59,158,255,.35);border-radius:7px;padding:5px 11px;font-size:12px;'+
+        'font-weight:600;color:var(--accent)">🔷 AF File</div>':'')+
+    '</div>'+
+    '<div class="detail-stages" id="detail-stages-'+t.id+'">' +
+      t.stages.map(function(sid){
+        const s = sg(sid);
+        const age = stageAge(t, sid);
+        const ageStr = age!==null ? ' <span style="font-size:9px;opacity:.6;font-weight:400">'+
+          (age===0?'added today':age+'d ago')+'</span>' : '';
+        return '<span style="display:inline-flex;align-items:center;gap:5px;background:'+s.color+'18;'+
+          'border:1px solid '+s.color+'44;border-radius:6px;padding:4px 10px;font-size:11px;'+
+          'font-weight:600;color:'+s.color+';font-family:var(--mono)">'+
+          s.label+ageStr+
+          '<button onclick="removeStageDetail(\''+t.id+'\','+sid+')" '+
+            'style="background:none;border:none;cursor:pointer;color:'+s.color+';opacity:.6;'+
+            'font-size:14px;line-height:1;padding:0 0 0 3px;display:flex;align-items:center;" '+
+            'title="Remove stage">×</button>'+
+          '</span>';
+      }).join('')+
+    '</div>'+
+    actHtml+
+    buildAssignSection(t)+
+    datesHtml+
+    (t.emd?'<div class="detail-sec">EMD</div><div style="font-family:var(--mono);font-size:15px;font-weight:700;color:var(--accent);padding:4px 0">₹'+Math.round(Number(t.emd)).toLocaleString('en-IN')+'</div>':'')+
+    (t.notes?'<div class="detail-sec">Notes</div><div class="detail-notes">'+esc(t.notes)+'</div>':'');
+
+  openM('modal-detail');
+  wireAssignButtons();
+  wirePastStagesToggle(t.id);
+
+  // Wire owner select for managers
+  const ownerSelect = document.getElementById('owner-select');
+  if(ownerSelect){
+    ownerSelect.addEventListener('change', function(){
+      const val = this.value;
+      if(!val) return;
+      const tender = tenders.find(function(x){ return x.id===id; });
+      if(!tender) return;
+      tender.owner = (val === '__none__') ? '' : val;
+      tender.updatedAt = Date.now();
+      save(); render(); schedulePush();
+      const newOwner = tender.owner ? personById(tender.owner) : null;
+      toast(newOwner ? 'Owner set to ' + newOwner.name + ' ✓' : 'Owner removed');
+      openDetail(id); // refresh
+    });
+  }
+}
+
+
+// ── ASSIGNMENT SECTION in detail ─────────────────────────────────────────────
+function buildAssignSection(t){
+  const assigned = t.stageAssigned || {};
+  const history  = t.stageAssignHistory || {};
+
+  // Active stages + any past stages that have history but are no longer active
+  const activeSids = t.stages || [];
+  const pastSids = Object.keys(history)
+    .map(Number)
+    .filter(function(sid){ return !activeSids.includes(sid) && history[sid] && history[sid].length > 0; });
+
+  if(activeSids.length === 0 && pastSids.length === 0) return '';
+
+  let html = '<div class="detail-sec">Assigned To</div>';
+
+  function renderStageBlock(sid, isActive){
+    const s   = sg(sid);
+    const pid = assigned[sid] || null;
+    const p   = pid ? personById(pid) : null;
+    const col = pid ? personColor(pid) : null;
+    const age = isActive ? stageAge(t, sid) : null;
+    const ageStr = age !== null ? (age === 0 ? 'added today' : age + 'd ago') : '';
+    const log = (history[sid] || []).slice().reverse();
+
+    const historyHtml = log.length > 1
+      ? '<div class="assign-history">'+
+          '<div class="assign-history-label">History</div>'+
+          log.slice(1).map(function(entry){
+            const ep = entry.pid ? personById(entry.pid) : null;
+            const ec = entry.pid ? personColor(entry.pid) : null;
+            const when = entry.assignedAt ? fmtRelTime(entry.assignedAt) : '';
+            const carried = entry.carriedFrom ? ' <span style="font-size:9px;color:var(--dim)">(carried over)</span>' : '';
+            return '<div class="assign-history-row">'+
+              (ep
+                ? '<span class="assign-history-avatar" style="background:'+ec+'">'+esc(initials(ep.name))+'</span>'+
+                  '<span class="assign-history-name">'+esc(ep.name)+carried+'</span>'
+                : '<span class="assign-history-name" style="color:var(--dim)">Unassigned</span>'
+              )+
+              (when ? '<span class="assign-history-when">'+when+'</span>' : '')+
+            '</div>';
+          }).join('')+
+        '</div>'
+      : '';
+
+    const pastBadge = !isActive
+      ? '<span style="font-size:9px;font-family:var(--mono);font-weight:700;color:var(--dim);'+
+          'background:var(--muted);border-radius:4px;padding:1px 5px;margin-left:5px;">past</span>'
+      : '';
+
+    return '<div class="stage-assign-row" style="flex-direction:column;align-items:stretch;">'+
+      '<div style="display:flex;align-items:center;margin-bottom:6px;">'+
+        '<div class="stage-assign-info" style="flex:1">'+
+          '<div class="stage-assign-label" style="color:'+s.color+'">'+s.label+pastBadge+'</div>'+
+          (ageStr ? '<div class="stage-assign-meta">'+ageStr+'</div>' : '')+
+        '</div>'+
+        (isActive
+          ? '<button class="stage-assign-btn" data-tid="'+t.id+'" data-sid="'+sid+'" '+
+              'style="background:none;border:1px solid var(--border2);border-radius:7px;'+
+              'padding:4px 10px;font-size:11px;font-family:var(--sans);font-weight:600;'+
+              'color:var(--dim);cursor:pointer;flex-shrink:0;">'+(p ? 'Change' : 'Assign')+'</button>'
+          : '')+
+      '</div>'+
+      '<div class="stage-assign-person" style="margin-bottom:'+(historyHtml?'8px':'0')+'">'+
+        (p
+          ? '<div class="stage-assign-avatar" style="background:'+col+'">'+esc(initials(p.name))+'</div>'+
+            '<div style="flex:1">'+
+              '<div class="stage-assign-name">'+esc(p.name)+'</div>'+
+              (log[0] && log[0].assignedAt ? '<div class="stage-assign-meta">Assigned '+fmtRelTime(log[0].assignedAt)+'</div>' : '')+
+            '</div>'
+          : '<div style="font-size:12px;color:var(--dim);font-style:italic">Not assigned</div>'
+        )+
+      '</div>'+
+      historyHtml+
+    '</div>';
+  }
+
+  // Active stages first
+  activeSids.forEach(function(sid){ html += renderStageBlock(sid, true); });
+
+  // Past stages (removed but have history) — collapsible
+  if(pastSids.length > 0){
+    const pastId = 'past-stages-'+t.id;
+    html +=
+      '<div style="border-top:1px solid var(--border);margin-top:4px;padding-top:4px;">'+
+        '<button id="btn-'+pastId+'" style="display:flex;align-items:center;gap:6px;width:100%;'+
+          'background:none;border:none;cursor:pointer;padding:8px 0;'+
+          'font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;'+
+          'color:var(--dim);font-family:var(--mono);">'+
+          '<span id="chev-'+pastId+'">▸</span> Past Stages ('+pastSids.length+')'+
+        '</button>'+
+        '<div id="'+pastId+'" style="display:none;">'+
+          pastSids.map(function(sid){ return renderStageBlock(sid, false); }).join('')+
+        '</div>'+
+      '</div>';
+  }
+
+  return html;
+}
+
+// Wire past-stages toggle — called after detail innerHTML is set
+function wirePastStagesToggle(tid){
+  const pastId = 'past-stages-'+tid;
+  const btn = document.getElementById('btn-'+pastId);
+  const panel = document.getElementById(pastId);
+  const chev = document.getElementById('chev-'+pastId);
+  if(!btn || !panel) return;
+  btn.addEventListener('click', function(){
+    const open = panel.style.display !== 'none';
+    panel.style.display = open ? 'none' : 'block';
+    chev.textContent = open ? '▸' : '▾';
+  });
+}
+
+function fmtRelTime(ts){
+  const diff = Date.now() - ts;
+  const mins = Math.floor(diff/60000);
+  const hrs  = Math.floor(diff/3600000);
+  const days = Math.floor(diff/86400000);
+  if(mins < 2)  return 'just now';
+  if(mins < 60) return mins+'m ago';
+  if(hrs  < 24) return hrs+'h ago';
+  if(days < 30) return days+'d ago';
+  return new Date(ts).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'2-digit'});
+}
+
+function wireAssignButtons(){
+  document.querySelectorAll('.stage-assign-btn').forEach(function(btn){
+    btn.addEventListener('click', function(e){
+      e.stopPropagation();
+      openAssign(this.dataset.tid, parseInt(this.dataset.sid));
+    });
+  });
+}
+
+// ── ADD / EDIT ────────────────────────────────────────
+function buildSelects(){
+  document.getElementById('f-stage').innerHTML =
+    STAGES.map(function(s){ return '<option value="'+s.id+'">'+s.label+'</option>'; }).join('');
+}
+
+function openAdd(){
+  editId = null;
+  document.getElementById('modal-title').textContent = 'Add Tender';
+  clearForm();
+  document.getElementById('rbox').classList.add('hidden');
+  openM('modal-add');
+}
+
+function openEdit(id){
+  const t = tenders.find(function(x){ return x.id===id; });
+  if(!t) return;
+  editId = id;
+  document.getElementById('modal-title').textContent = 'Edit Tender';
+  fillForm(t);
+  buildChips(t);
+  document.getElementById('rbox').classList.remove('hidden');
+  openM('modal-add');
+}
+
+function fillForm(t){
+  document.getElementById('f-no').value       = t.no || '';
+  document.getElementById('f-stage').value    = t.stages.length ? t.stages[t.stages.length-1] : 0;
+  document.getElementById('f-notes').value    = t.notes || '';
+  document.getElementById('f-emd').value      = t.emd   || '';
+  document.getElementById('f-sale-end').value = t.saleEnd || '';
+  document.getElementById('f-tech-bid').value = t.techBid || '';
+  document.getElementById('f-price-bid').value= t.priceBid || '';
+  document.getElementById('f-ra').value       = t.ra || '';
+  document.getElementById('f-validity').value = t.validity || '';
+  document.getElementById('f-tcq').value      = t.tcq || '';
+  setPri(t.priority === 'high');
+  setAF(t.isAF === true);
+}
+
+function clearForm(){
+  ['f-no','f-notes','f-emd','f-sale-end','f-tech-bid','f-price-bid','f-ra','f-validity','f-tcq']
+    .forEach(function(i){ const e=document.getElementById(i); if(e) e.value=''; });
+  document.getElementById('f-stage').value = 0;
+  setPri(false);
+  setAF(false);
+}
+
+function buildChips(t){
+  const w = document.getElementById('stage-chips');
+  if(!t.stages.length){
+    w.innerHTML = '<span style="font-size:12px;color:var(--dim)">No stages yet</span>';
+    return;
+  }
+  w.innerHTML = t.stages.map(function(sid){
+    return '<div class="chip">'+
+      '<span class="chip-l">'+sg(sid).label+'</span>'+
+      '<button class="chip-x" onclick="removeStage(\''+t.id+'\','+sid+')">×</button>'+
+    '</div>';
+  }).join('');
+}
+
+function removeStage(id, sid){
+  const t = tenders.find(function(x){ return x.id===id; });
+  if(!t) return;
+  t.stages = t.stages.filter(function(s){ return s!==sid; });
+  if(t.stageEnteredAt) delete t.stageEnteredAt[sid];
+  t.updatedAt = Date.now();
+  // NOTE: deliberately preserve stageAssigned[sid] and stageAssignHistory[sid]
+  // so assignment history survives stage removal
+  save(); render(); buildChips(t); toast('Stage removed');
+  schedulePush();
+}
+
+function removeStageDetail(id, sid){
+  const t = tenders.find(function(x){ return x.id===id; });
+  if(!t) return;
+  if(t.stages.length <= 1){ toast('Cannot remove last stage', true); return; }
+  t.stages = t.stages.filter(function(s){ return s!==sid; });
+  if(t.stageEnteredAt) delete t.stageEnteredAt[sid];
+  t.updatedAt = Date.now();
+  // Preserve stageAssigned[sid] and stageAssignHistory[sid] intentionally
+  save(); render();
+  // Refresh just the stages section inside the open detail modal
+  const container = document.getElementById('detail-stages-'+id);
+  if(container){
+    const s_list = t.stages.map(function(sid2){
+      const s = sg(sid2);
+      const age = stageAge(t, sid2);
+      const ageStr = age!==null ? ' <span style="font-size:9px;opacity:.6;font-weight:400">'+(age===0?'added today':age+'d ago')+'</span>' : '';
+      return '<span style="display:inline-flex;align-items:center;gap:5px;background:'+s.color+'18;'+
+        'border:1px solid '+s.color+'44;border-radius:6px;padding:4px 10px;font-size:11px;'+
+        'font-weight:600;color:'+s.color+';font-family:var(--mono)">'+
+        s.label+ageStr+
+        '<button onclick="removeStageDetail(\''+id+'\','+sid2+')" '+
+          'style="background:none;border:none;cursor:pointer;color:'+s.color+';opacity:.6;'+
+          'font-size:14px;line-height:1;padding:0 0 0 3px;display:flex;align-items:center;" '+
+          'title="Remove stage">×</button>'+
+        '</span>';
+    });
+    container.innerHTML = s_list.join('');
+  }
+  toast('Stage removed');
+  schedulePush();
+}
+
+function saveTender(){
+  const no = document.getElementById('f-no').value.trim();
+  if(!no){ toast('Tender No required', true); return; }
+  const sid = parseInt(document.getElementById('f-stage').value);
+  const fields = {
+    no: no,
+    priority:  document.getElementById('pri-toggle').classList.contains('on') ? 'high' : '',
+    isAF:      document.getElementById('af-toggle').classList.contains('on') || false,
+    notes:     document.getElementById('f-notes').value.trim(),
+    emd:       document.getElementById('f-emd').value.trim() ? String(Math.round(Number(document.getElementById('f-emd').value))) : '',
+    saleEnd:   document.getElementById('f-sale-end').value,
+    techBid:   document.getElementById('f-tech-bid').value,
+    priceBid:  document.getElementById('f-price-bid').value,
+    ra:        document.getElementById('f-ra').value,
+    validity:  document.getElementById('f-validity').value,
+    tcq:       document.getElementById('f-tcq').value,
+  };
+  if(editId){
+    const t = tenders.find(function(x){ return x.id===editId; });
+    if(!t) return;
+    Object.assign(t, fields);
+    t.updatedAt = Date.now();
+    if(!t.stages.includes(sid)){
+      t.stages.push(sid);
+      if(!t.stageEnteredAt) t.stageEnteredAt = {};
+      const mn = new Date(); mn.setHours(0,0,0,0);
+      t.stageEnteredAt[sid] = mn.getTime();
+    }
+    toast('Updated ✓');
+  } else {
+    if(tenders.find(function(x){ return x.no.toLowerCase()===no.toLowerCase(); })){
+      toast('Tender No already exists', true); return;
+    }
+    const mn = new Date(); mn.setHours(0,0,0,0);
+    const entered = {}; entered[sid] = mn.getTime();
+    // Set owner to current officer profile (if any)
+    const _ownerPid = (function(){
+      const pid = getCurrentProfile();
+      if(!pid) return '';
+      const p = personById(pid);
+      return (p && p.role !== 'manager') ? pid : '';
+    })();
+    tenders.unshift({id:uid(), stages:[sid], stageEnteredAt:entered, owner:_ownerPid, updatedAt:Date.now(), ...fields});
+    toast('Tender added ✓');
+  }
+  save(); render(); closeM('modal-add');
+  schedulePush();
+}
+
+// ── PRIORITY TOGGLE ───────────────────────────────────
+function togglePri(){ setPri(!document.getElementById('pri-toggle').classList.contains('on')); }
+function setPri(on){
+  document.getElementById('pri-toggle').classList.toggle('on', on);
+  document.getElementById('pri-check').textContent = on ? '✓' : '';
+}
+
+// ── AF TOGGLE ─────────────────────────────────────────
+function toggleAF(){ setAF(!document.getElementById('af-toggle').classList.contains('on')); }
+function setAF(on){
+  document.getElementById('af-toggle').classList.toggle('on', on);
+  document.getElementById('af-check').textContent = on ? '✓' : '';
+}
+
+// ── DELETE ────────────────────────────────────────────
+function openDel(id){
+  const t = tenders.find(function(x){ return x.id===id; });
+  if(!t) return;
+  document.getElementById('del-q').textContent = 'Delete "'+t.no+'"?';
+  document.getElementById('del-ok').onclick = function(){ doDelete(id); };
+  openM('modal-del');
+}
+function doDelete(id){
+  tenders = tenders.filter(function(x){ return x.id!==id; });
+  // Track deletion with timestamp so merge knows not to bring it back
+  try{
+    const deleted = JSON.parse(localStorage.getItem('tt_deleted')||'{}');
+    deleted[id] = Date.now();
+    // Keep only last 200 deletions to avoid bloat
+    const keys = Object.keys(deleted);
+    if(keys.length > 200){
+      keys.sort(function(a,b){ return deleted[a]-deleted[b]; });
+      keys.slice(0, keys.length-200).forEach(function(k){ delete deleted[k]; });
+    }
+    localStorage.setItem('tt_deleted', JSON.stringify(deleted));
+  } catch(e){}
+  save(); render(); closeM('modal-del'); toast('Deleted');
+  schedulePush();
+}
+
+// ── MODAL HELPERS ─────────────────────────────────────
+function openM(id){ document.getElementById(id).classList.add('open'); }
+function closeM(id){ document.getElementById(id).classList.remove('open'); }
+
+document.querySelectorAll('.overlay').forEach(function(el){
+  el.addEventListener('click', function(e){ if(e.target===el) el.classList.remove('open'); });
+});
+document.addEventListener('keydown', function(e){
+  if(e.key==='Escape') document.querySelectorAll('.overlay.open').forEach(function(m){ m.classList.remove('open'); });
+});
+
+// ── TOAST ─────────────────────────────────────────────
+let _tt;
+function toast(msg, err){
+  const el = document.getElementById('toast');
+  el.textContent = (err?'✗ ':'✓ ')+msg;
+  el.style.borderColor = err?'rgba(239,68,68,.5)':'rgba(52,211,153,.4)';
+  el.classList.add('show'); clearTimeout(_tt);
+  _tt = setTimeout(function(){ el.classList.remove('show'); }, 2200);
+}
+
+// ── GOOGLE SHEETS SYNC ────────────────────────────────
+// ── SYNC — GitHub Gist + Export/Import ──────────────
+// Uses GitHub Gist API: standard fetch, proper CORS, free.
+// Setup: create a GitHub Personal Access Token with "gist" scope only.
+// https://github.com/settings/tokens/new?scopes=gist&description=TenderTrack
+
+const SYNC_KEY  = 'tt_sync_cfg';
+const SYNC_FILE = 'tendertrack-data.json';
+
+function getSyncCfg(){
+  try{ return JSON.parse(localStorage.getItem(SYNC_KEY)||'{}'); }catch(e){ return {}; }
+}
+function saveSyncCfg(cfg){ localStorage.setItem(SYNC_KEY, JSON.stringify(cfg)); }
+
+function setSyncDot(state){
+  const dot = document.getElementById('sync-dot');
+  const btn  = document.getElementById('btn-sync');
+  if(!dot||!btn) return;
+  dot.className = 'sync-dot' + (state!=='idle'?' '+state:'');
+  const cfg = getSyncCfg();
+  btn.className  = 'btn-sync' + (cfg.token&&state==='ok'?' ok':'');
+}
+
+// ── Slim/expand payload (same field mapping) ──────────
+function buildSlim(){
+  return tenders.map(function(t){
+    const o = {id:t.id, no:t.no, stages:t.stages};
+    if(t.owner)     o.ow  = t.owner;
+    if(t.updatedAt) o.ua  = t.updatedAt;
+    if(t.stageEnteredAt && Object.keys(t.stageEnteredAt).length) o.sea = t.stageEnteredAt;
+    if(t.priority) o.p   = t.priority;
+    if(t.isAF)     o.af  = true;
+    if(t.notes)    o.n   = t.notes;
+    if(t.emd)      o.e   = t.emd;
+    if(t.saleEnd)  o.s   = t.saleEnd;
+    if(t.techBid)  o.tb  = t.techBid;
+    if(t.priceBid) o.pb  = t.priceBid;
+    if(t.ra)       o.ra  = t.ra;
+    if(t.validity) o.v   = t.validity;
+    if(t.tcq)      o.q   = t.tcq;
+    if(t.stageAssigned && Object.keys(t.stageAssigned).length) o.sa = t.stageAssigned;
+    if(t.stageAssignHistory && Object.keys(t.stageAssignHistory).length) o.sah = t.stageAssignHistory;
+    return o;
+  });
+}
+
+function expandSlim(t){
+  return {
+    id:t.id, no:t.no,
+    owner:              t.ow  || t.owner || '',
+    updatedAt:          t.ua  || t.updatedAt || 0,
+    stages:             t.stages || [],
+    stageEnteredAt:     t.sea || t.stageEnteredAt || {},
+    priority:           t.p   || t.priority || '',
+    isAF:               !!(t.af || t.isAF),
+    notes:              t.n   || t.notes    || '',
+    emd:                t.e   || t.emd      || '',
+    saleEnd:            t.s   || t.saleEnd  || '',
+    techBid:            t.tb  || t.techBid  || '',
+    priceBid:           t.pb  || t.priceBid || '',
+    ra:                 t.ra  || '',
+    validity:           t.v   || t.validity || '',
+    tcq:                t.q   || t.tcq      || '',
+    stageAssigned:      t.sa  || t.stageAssigned || {},
+    stageAssignHistory: t.sah || t.stageAssignHistory || {},
+  };
+}
+
+// ── Gist API ──────────────────────────────────────────
+async function gistReq(method, path, body){
+  const cfg = getSyncCfg();
+  if(!cfg.token) throw new Error('No token');
+  const opts = {
+    method: method,
+    headers: {
+      'Authorization': 'Bearer ' + cfg.token,
+      'Accept': 'application/vnd.github+json',
+      'Content-Type': 'application/json',
+      'X-GitHub-Api-Version': '2022-11-28'
+    }
+  };
+  if(body) opts.body = JSON.stringify(body);
+  const res = await fetch('https://api.github.com' + path, opts);
+  if(!res.ok){
+    const err = await res.json().catch(function(){ return {}; });
+    throw new Error((err.message || res.statusText) + ' (' + res.status + ')');
+  }
+  return res.status === 204 ? {} : res.json();
+}
+
+// ── Auto-push (debounced 8s) ──────────────────────────
+let _pushTimer = null;
+function schedulePush(){
+  const cfg = getSyncCfg();
+  if(!cfg.token || !cfg.gistId) return;
+  clearTimeout(_pushTimer);
+  const dot = document.getElementById('sync-dot');
+  if(dot) dot.className = 'sync-dot pending';
+  _pushTimer = setTimeout(function(){ syncPush(true); }, 8000);
+}
+
+// ── Find existing Gist by name (for new devices) ──────
+// ── Gist ID discovery ────────────────────────────────
+async function findOrCreateGistId(){
+  const cfg = getSyncCfg();
+  if(!cfg.token) return null;
+  if(cfg.gistId) return cfg.gistId;
+  // Check EMD's saved gistId first (same Gist shared)
+  try{
+    const emd = JSON.parse(localStorage.getItem('emd_sync_cfg')||'{}');
+    if(emd.gistId){ cfg.gistId=emd.gistId; saveSyncCfg(cfg); return cfg.gistId; }
+  }catch(e){}
+  // Search GitHub
+  try{
+    const r = await fetch('https://api.github.com/gists?per_page=50',{
+      headers:{'Authorization':'Bearer '+cfg.token,'Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'}
+    });
+    if(!r.ok) return null;
+    const list = await r.json();
+    const found = list.find(function(g){ return g.files&&(g.files[SYNC_FILE]||g.files['emdtrack-data.json']); });
+    if(found){ cfg.gistId=found.id; saveSyncCfg(cfg); return cfg.gistId; }
+  }catch(e){ console.warn('findGist:',e); }
+  return null;
+}
+
+// ── Push (merge-first) ────────────────────────────────
+async function syncPush(silent){
+  const cfg = getSyncCfg();
+  if(!cfg.token){ if(!silent) toast('Set up sync first',true); return; }
+
+  // No Gist yet — create one
+  if(!cfg.gistId){
+    setSyncDot('busy');
+    try{
+      const files={}; files[SYNC_FILE]={content:JSON.stringify({tenders:buildSlim(),people:getPeople(),deleted:JSON.parse(localStorage.getItem('tt_deleted')||'{}')})};
+      const res = await gistReq('POST','/gists',{description:'TenderTrack data',public:false,files:files});
+      cfg.gistId=res.id; saveSyncCfg(cfg);
+      localStorage.setItem('tt_last_sync',Date.now().toString());
+      setSyncDot('ok'); if(!silent) toast('Pushed ✓');
+    }catch(e){ setSyncDot('err'); if(!silent) toast('Push failed: '+e.message,true); console.warn(e); }
+    return;
+  }
+
+  // Merge-push
+  setSyncDot('busy');
+  try{
+    const localDeleted = JSON.parse(localStorage.getItem('tt_deleted')||'{}');
+    // Read remote
+    const res  = await gistReq('GET','/gists/'+cfg.gistId);
+    const file = res.files && res.files[SYNC_FILE];
+    let remoteTenders=[], remotePeople=[], remoteDeleted={};
+    if(file){
+      let raw=file.content;
+      if(file.truncated){ const r2=await fetch(file.raw_url); raw=await r2.text(); }
+      try{
+        const p=JSON.parse(raw);
+        if(Array.isArray(p)){ remoteTenders=p.map(expandSlim); }
+        else if(p&&Array.isArray(p.tenders)){ remoteTenders=p.tenders.map(expandSlim); remotePeople=p.people||[]; remoteDeleted=p.deleted||{}; }
+      }catch(e){}
+    }
+    // Merge deletions
+    const allDeleted=Object.assign({},remoteDeleted,localDeleted);
+    localStorage.setItem('tt_deleted',JSON.stringify(allDeleted));
+    // Merge tenders
+    function ts(t){ if(t.updatedAt&&t.updatedAt>0) return t.updatedAt; const v=Object.values(t.stageEnteredAt||{}).filter(function(x){return x>0;}); return v.length?Math.max.apply(null,v):0; }
+    const map={};
+    remoteTenders.forEach(function(t){ if(!allDeleted[t.id]) map[t.id]=t; });
+    tenders.forEach(function(t){ if(allDeleted[t.id]) return; const r=map[t.id]; if(!r||ts(t)>ts(r)) map[t.id]=t; });
+    const merged=Object.values(map); merged.sort(function(a,b){return ts(b)-ts(a);});
+    // Merge people
+    const pm={}; getPeople().forEach(function(p){pm[p.id]=p;}); remotePeople.forEach(function(p){if(!pm[p.id])pm[p.id]=p;});
+    const mergedPeople=Object.values(pm);
+    tenders=merged; save(); savePeople(mergedPeople); render();
+    // Write back
+    const files2={}; files2[SYNC_FILE]={content:JSON.stringify({tenders:buildSlim(),people:mergedPeople,deleted:allDeleted})};
+    await gistReq('PATCH','/gists/'+cfg.gistId,{files:files2});
+    localStorage.setItem('tt_last_sync',Date.now().toString());
+    setSyncDot('ok'); if(!silent) toast('Synced ✓');
+  }catch(e){ setSyncDot('err'); if(!silent) toast('Sync failed: '+e.message,true); console.warn(e); }
+}
+
+// ── Pull ──────────────────────────────────────────────
+async function syncPull(silent){
+  const cfg = getSyncCfg();
+  if(!cfg.token) return;
+  if(!cfg.gistId){ if(!silent) toast('Push first to create the Gist',true); return; }
+  setSyncDot('busy');
+  try{
+    const res  = await gistReq('GET','/gists/'+cfg.gistId);
+    const file = res.files && res.files[SYNC_FILE];
+    if(!file){
+      // File not in Gist yet — push to create it
+      setSyncDot('ok'); syncPush(silent); return;
+    }
+    let raw=file.content;
+    if(file.truncated){ const r2=await fetch(file.raw_url); raw=await r2.text(); }
+    const localDeleted=JSON.parse(localStorage.getItem('tt_deleted')||'{}');
+    let arr=[],peopleArr=null,remoteDeleted={};
+    try{
+      const p=JSON.parse(raw);
+      if(Array.isArray(p)){ arr=p; }
+      else if(p&&Array.isArray(p.tenders)){ arr=p.tenders; peopleArr=p.people||null; remoteDeleted=p.deleted||{}; }
+    }catch(e){ throw new Error('Invalid data in Gist'); }
+    const allDeleted=Object.assign({},localDeleted,remoteDeleted);
+    localStorage.setItem('tt_deleted',JSON.stringify(allDeleted));
+    const filtered=arr.filter(function(t){return !allDeleted[t.id];});
+    if(filtered.length>0||peopleArr){
+      tenders=filtered.map(expandSlim); save();
+      if(peopleArr&&peopleArr.length>0) savePeople(peopleArr);
+      render();
+      localStorage.setItem('tt_last_sync',Date.now().toString());
+      setSyncDot('ok'); if(!silent) toast('Pulled '+filtered.length+' tenders ✓');
+    } else {
+      setSyncDot('ok'); if(!silent) toast('Nothing to pull');
+    }
+  }catch(e){ setSyncDot('err'); if(!silent) toast('Pull failed: '+e.message,true); console.warn(e); }
+}
+
+// ── Export / Import ───────────────────────────────────
+function exportData(){
+  const payload={tenders:buildSlim(),people:getPeople(),deleted:JSON.parse(localStorage.getItem('tt_deleted')||'{}')};
+  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download='tendertrack-'+new Date().toISOString().slice(0,10)+'.json';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+  toast('Exported ✓');
+}
+
+function importData(){
+  const input=document.createElement('input'); input.type='file'; input.accept='.json';
+  input.addEventListener('change',function(){
+    const file=input.files[0]; if(!file) return;
+    const reader=new FileReader();
+    reader.onload=function(ev){
+      try{
+        const p=JSON.parse(ev.target.result);
+        const arr=Array.isArray(p)?p:(p&&Array.isArray(p.tenders)?p.tenders:null);
+        if(!arr) throw new Error('Not a valid export file');
+        if(tenders.length>0&&!confirm('Replace all '+tenders.length+' tenders with imported data?')) return;
+        tenders=arr.map(expandSlim); save(); render();
+        toast('Imported '+tenders.length+' tenders ✓');
+      }catch(err){ toast('Import failed: '+err.message,true); }
+    };
+    reader.readAsText(file);
+  });
+  input.click();
+}
+
+
+// ── Sync modal ────────────────────────────────────────
+function openSync(){
+  const cfg       = getSyncCfg();
+  const connected = !!(cfg.token);
+  const lastSync  = localStorage.getItem('tt_last_sync');
+  const lsStr     = lastSync
+    ? new Date(+lastSync).toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})
+    : 'Never';
+
+  let html = '';
+
+  if(connected){
+    html =
+      '<div class="sync-bar">'+
+        '<span class="sync-dot ok"></span>'+
+        '<span>Connected · Last sync: <b>' + lsStr + '</b></span>'+
+      '</div>'+
+      // Debug panel — always visible so user can see state
+      '<div style="background:var(--muted);border:1px solid var(--border);border-radius:8px;padding:8px 10px;margin-bottom:10px;font-size:11px;font-family:var(--mono);color:var(--dim);line-height:1.8;">'+
+        'Token: <b style="color:var(--text)">' + esc(cfg.token ? cfg.token.slice(0,12)+'…' : '❌ none') + '</b><br>'+
+        'Gist ID: <b style="color:var(--text)">' + (cfg.gistId ? esc(cfg.gistId.slice(0,16))+'…' : '❌ not found') + '</b><br>'+
+        'Local tenders: <b style="color:var(--text)">' + tenders.length + '</b>'+
+      '</div>'+
+      '<div class="sync-acts">'+
+        '<button class="btn-push" id="sp-push">⬆ Push</button>'+
+        '<button class="btn-pull" id="sp-pull">⬇ Pull</button>'+
+        '<button class="btn-pull" id="sp-test" style="background:var(--card2);color:var(--dim);border:1px solid var(--border2);">🔍 Test</button>'+
+      '</div>'+
+      '<div id="sp-test-result" style="font-size:11px;font-family:var(--mono);min-height:16px;margin-bottom:8px;padding:6px 8px;line-height:1.7;display:none;background:var(--muted);border-radius:7px;border:1px solid var(--border);"></div>'+
+      '<div style="margin-bottom:12px;">'+
+        '<button id="sp-force-pull" style="width:100%;padding:9px;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--mono);background:var(--card2);color:var(--yellow);border:1px solid rgba(180,83,9,.3);">⚠ Force Pull — replace ALL local data with Gist</button>'+
+      '</div>'+
+      '<div class="fsec">Export / Import (no account needed)</div>'+
+      '<div class="sync-acts">'+
+        '<button class="btn-push" id="sp-export" style="background:var(--purple)">⬇ Export JSON</button>'+
+        '<button class="btn-pull" id="sp-import">⬆ Import JSON</button>'+
+      '</div>'+
+      '<div class="fsec">GitHub Token</div>'+
+      '<div class="frow" style="margin-bottom:0">'+
+        '<input class="fi" id="sp-token" type="password" value="' + esc(cfg.token||'') + '" '+
+          'placeholder="ghp_…" style="font-size:13px;font-family:var(--mono);">'+
+      '</div>';
+  } else {
+    html =
+      // Big direct button — most people miss the link in text
+      '<a href="https://github.com/settings/tokens/new?scopes=gist&description=TenderTrack" target="_blank" '+
+        'style="display:flex;align-items:center;justify-content:center;gap:8px;'+
+        'background:var(--purple);color:#fff;border:none;border-radius:10px;'+
+        'padding:12px 16px;font-family:var(--sans);font-size:14px;font-weight:700;'+
+        'text-decoration:none;margin-bottom:16px;cursor:pointer;">'+
+        '🔗 Open GitHub Token Page →'+
+      '</a>'+
+      '<div style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:14px;">'+
+        '<div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:8px;">Follow these steps on that page:</div>'+
+        '<div style="font-size:12px;color:var(--dim);line-height:1.9;">'+
+          '<b style="color:var(--text)">1.</b> Scroll down to <b style="color:var(--text)">Token name</b> — it\'s already filled as "TenderTrack"<br>'+
+          '<b style="color:var(--text)">2.</b> Set <b style="color:var(--text)">Expiration</b> — choose <b style="color:var(--text)">No expiration</b><br>'+
+          '<b style="color:var(--text)">3.</b> Under <b style="color:var(--text)">Select scopes</b> — tick only <b style="color:var(--text)">gist</b> ✓<br>'+
+          '<b style="color:var(--text)">4.</b> Scroll to bottom → click <b style="color:var(--text)">Generate token</b><br>'+
+          '<b style="color:var(--text)">5.</b> Copy the token shown (starts with <code style="font-family:var(--mono);background:var(--muted);padding:1px 5px;border-radius:4px;">ghp_</code>)'+
+        '</div>'+
+      '</div>'+
+      '<div class="sync-step-num" style="width:auto;height:auto;border-radius:0;background:none;border:none;font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--dim);font-family:var(--mono);padding:0 0 6px;display:block;">Paste token here</div>'+
+      '<div class="frow" style="margin-bottom:14px;">'+
+        '<input class="fi" id="sp-token" type="password" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" '+
+          'style="font-size:13px;font-family:var(--mono);" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">'+
+      '</div>'+
+      '<div style="font-size:11px;color:var(--dim);line-height:1.6;margin-bottom:14px;">'+
+        'After connecting, tap <b style="color:var(--text)">Push</b> once. A private Gist is created automatically.<br>'+
+        'On other devices: enter the same token and tap <b style="color:var(--text)">Pull</b>.'+
+      '</div>'+
+      '<div class="fsec">Or skip accounts — Export / Import</div>'+
+      '<div class="sync-acts" style="margin-top:8px">'+
+        '<button class="btn-push" id="sp-export" style="background:var(--purple)">⬇ Export JSON</button>'+
+        '<button class="btn-pull" id="sp-import">⬆ Import JSON</button>'+
+      '</div>';
+  }
+
+  html +=
+    '<div class="mfoot" style="padding-top:14px;border-top:1px solid var(--border)">'+
+      (connected ? '<button id="sp-disc" class="btn-c" style="margin-right:auto;color:var(--red);border-color:rgba(224,90,78,.3)">Disconnect</button>' : '')+
+      '<button class="btn-c" onclick="closeM(\'modal-sync\')">Cancel</button>'+
+      '<button class="btn-s" id="sp-connect">' + (connected ? 'Save Token' : 'Connect') + '</button>'+
+    '</div>';
+
+  document.getElementById('sync-body').innerHTML = html;
+
+  function wire(id, fn){ const el = document.getElementById(id); if(el) el.addEventListener('click', fn); }
+
+  // Wire old Google Sheets one-time migration
+
+  wire('sp-push',   function(){ closeM('modal-sync'); syncPush(); });
+  wire('sp-pull',   function(){ closeM('modal-sync'); syncPull(); });
+
+  wire('sp-test', async function(){
+    const resultEl = document.getElementById('sp-test-result');
+    if(!resultEl) return;
+    resultEl.style.display = 'block';
+    resultEl.style.color = 'var(--dim)';
+    resultEl.textContent = '⏳ Testing...';
+    const cfg = getSyncCfg();
+    const lines = [];
+    try{
+      // Step 1: check token
+      lines.push('1. Token: ' + (cfg.token ? cfg.token.slice(0,12)+'…' : '❌ missing'));
+      if(!cfg.token){ resultEl.innerHTML = lines.join('<br>'); return; }
+
+      // Step 2: verify token with GitHub
+      const userRes = await fetch('https://api.github.com/user', {
+        headers: { 'Authorization': 'Bearer '+cfg.token, 'Accept': 'application/vnd.github+json' }
+      });
+      if(userRes.ok){
+        const user = await userRes.json();
+        lines.push('2. GitHub user: ✓ ' + esc(user.login));
+      } else {
+        lines.push('2. GitHub auth: ❌ ' + userRes.status + ' — token invalid or expired');
+        resultEl.style.color = 'var(--red)';
+        resultEl.innerHTML = lines.join('<br>');
+        return;
+      }
+
+      // Step 3: check gistId
+      lines.push('3. Gist ID: ' + (cfg.gistId ? '✓ '+cfg.gistId.slice(0,16)+'…' : '❌ not set'));
+
+      // Step 4: search for Gist
+      const listRes = await fetch('https://api.github.com/gists?per_page=50', {
+        headers: { 'Authorization': 'Bearer '+cfg.token, 'Accept': 'application/vnd.github+json' }
+      });
+      if(listRes.ok){
+        const gists = await listRes.json();
+        const found = gists.find(function(g){ return g.files && g.files[SYNC_FILE]; });
+        if(found){
+          lines.push('4. Gist found: ✓ ' + found.id.slice(0,16)+'…');
+          if(!cfg.gistId){
+            cfg.gistId = found.id; saveSyncCfg(cfg);
+            lines.push('   → GistID saved! Tap Pull now.');
+          }
+        } else {
+          lines.push('4. Gist search: no TenderTrack Gist found (need to Push first from main device)');
+        }
+      } else {
+        lines.push('4. Gist list: ❌ ' + listRes.status);
+      }
+
+      resultEl.style.color = 'var(--green)';
+      resultEl.innerHTML = lines.join('<br>');
+    } catch(e){
+      lines.push('❌ Error: ' + e.message);
+      resultEl.style.color = 'var(--red)';
+      resultEl.innerHTML = lines.join('<br>');
+    }
+  });
+  wire('sp-force-pull', function(){
+    if(!confirm('This will REPLACE all your local tenders with the Gist data. Any unsynced local changes will be lost. Continue?')) return;
+    closeM('modal-sync');
+    syncForcePull();
+  });
+  wire('sp-export', exportData);
+  wire('sp-import', importData);
+
+  wire('sp-connect', function(){
+    const inp = document.getElementById('sp-token');
+    if(!inp) return;
+    const token = inp.value.trim();
+    if(!token){ toast('Enter your GitHub token', true); return; }
+    if(!token.startsWith('ghp_') && !token.startsWith('github_pat_')){
+      toast('Token should start with ghp_ or github_pat_', true); return;
+    }
+    const oldCfg = getSyncCfg();
+    const newCfg = { token: token, gistId: token === oldCfg.token ? (oldCfg.gistId||'') : '' };
+    saveSyncCfg(newCfg);
+    setSyncDot('ok');
+    closeM('modal-sync');
+    toast('Token saved ✓');
+    // Try to find existing Gist — if found pull, if not create via push
+    findOrCreateGistId().then(function(gistId){
+      if(gistId){ syncPull(); } else { syncPush(); }
+    });
+  });
+
+  wire('sp-disc', function(){
+    const btn = document.getElementById('sp-disc');
+    if(!btn) return;
+    if(btn.dataset.armed === '1'){
+      saveSyncCfg({});
+      localStorage.removeItem('tt_last_sync');
+      setSyncDot('idle');
+      closeM('modal-sync');
+      toast('Sync disconnected');
+    } else {
+      btn.dataset.armed = '1';
+      btn.textContent = 'Tap again to confirm';
+      setTimeout(function(){ if(btn) { btn.dataset.armed='0'; btn.textContent='Disconnect'; }}, 2500);
+    }
+  });
+
+  openM('modal-sync');
+}
+
+// ── DRAG AND DROP ─────────────────────────────────────
+(function(){
+  var ghost = null;
+  var dragTid = null, dragFromSid = null;
+  var overChips = null;
+  var longPressTimer = null;
+  var isDragging = false;
+  var startX, startY;
+
+  function createGhost(wrap){
+    var g = wrap.cloneNode(true);
+    g.className = 'drag-ghost';
+    var r = wrap.getBoundingClientRect();
+    g.style.width  = r.width  + 'px';
+    g.style.height = r.height + 'px';
+    g.style.left   = r.left   + 'px';
+    g.style.top    = r.top    + 'px';
+    document.body.appendChild(g);
+    return g;
+  }
+
+  function moveGhost(x, y){
+    if(!ghost) return;
+    ghost.style.left = (x - ghost.offsetWidth/2)  + 'px';
+    ghost.style.top  = (y - ghost.offsetHeight/2) + 'px';
+  }
+
+  function getChipsAt(x, y){
+    var els = document.elementsFromPoint(x, y);
+    for(var i=0;i<els.length;i++){
+      if(els[i].classList.contains('srow-chips')) return els[i];
+      if(els[i].classList.contains('srow')){ 
+        var c = els[i].querySelector('.srow-chips');
+        if(c) return c;
+      }
+    }
+    return null;
+  }
+
+  function startDrag(wrap, clientX, clientY){
+    isDragging = true;
+    dragTid  = wrap.dataset.tid;
+    dragFromSid = parseInt(wrap.dataset.sid);
+    wrap.classList.add('dragging');
+    ghost = createGhost(wrap);
+    moveGhost(clientX, clientY);
+    // Vibrate on mobile if supported
+    if(navigator.vibrate) navigator.vibrate(40);
+  }
+
+  function moveDrag(clientX, clientY){
+    if(!isDragging) return;
+    moveGhost(clientX, clientY);
+    var chips = getChipsAt(clientX, clientY);
+    if(chips !== overChips){
+      if(overChips) overChips.classList.remove('drag-over');
+      overChips = chips;
+      if(overChips) overChips.classList.add('drag-over');
+    }
+  }
+
+  function endDrag(wrap){
+    if(!isDragging) return;
+    isDragging = false;
+    wrap.classList.remove('dragging');
+    if(ghost){ ghost.remove(); ghost = null; }
+    if(overChips){
+      overChips.classList.remove('drag-over');
+      var toSid = parseInt(overChips.dataset.sid);
+      if(!isNaN(toSid) && toSid !== dragFromSid){
+        dropChip(dragTid, dragFromSid, toSid);
+      }
+      overChips = null;
+    }
+    dragTid = null; dragFromSid = null;
+  }
+
+  function cancelDrag(wrap){
+    if(!isDragging) return;
+    isDragging = false;
+    wrap.classList.remove('dragging');
+    if(ghost){ ghost.remove(); ghost = null; }
+    if(overChips){ overChips.classList.remove('drag-over'); overChips = null; }
+    dragTid = null; dragFromSid = null;
+  }
+
+  function dropChip(tid, fromSid, toSid){
+    var t = tenders.find(function(x){ return x.id === tid; });
+    if(!t) return;
+    // Remove from old stage, add to new stage
+    t.stages = t.stages.filter(function(s){ return s !== fromSid; });
+    if(!t.stages.includes(toSid)) t.stages.push(toSid);
+    // Update stageEnteredAt — preserve history for fromSid intentionally
+    if(!t.stageEnteredAt) t.stageEnteredAt = {};
+    delete t.stageEnteredAt[fromSid]; // clear entered-at for old stage only
+    if(!t.stageEnteredAt[toSid]){
+      var midnight = new Date(); midnight.setHours(0,0,0,0);
+      t.stageEnteredAt[toSid] = midnight.getTime();
+    }
+    // Carry over current assignee from old stage to new stage if new stage is unassigned
+    if(!t.stageAssigned) t.stageAssigned = {};
+    if(!t.stageAssignHistory) t.stageAssignHistory = {};
+    var prevPid = t.stageAssigned[fromSid] || null;
+    if(prevPid && !t.stageAssigned[toSid]){
+      t.stageAssigned[toSid] = prevPid;
+      if(!t.stageAssignHistory[toSid]) t.stageAssignHistory[toSid] = [];
+      t.stageAssignHistory[toSid].push({ pid: prevPid, assignedAt: Date.now(), carriedFrom: fromSid });
+    }
+    t.updatedAt = Date.now();
+    save(); render();
+    var toStage = STAGES.find(function(s){ return s.id === toSid; });
+    toast('Moved to ' + (toStage ? toStage.label : 'stage'));
+    schedulePush();
+  }
+
+  window.initDrag = function(wrap){
+    // ── DESKTOP: mouse drag ──
+    wrap.addEventListener('mousedown', function(e){
+      if(e.button !== 0) return;
+      e.preventDefault();
+      startX = e.clientX; startY = e.clientY;
+      var moved = false;
+
+      function onMove(ev){
+        var dx = ev.clientX - startX, dy = ev.clientY - startY;
+        if(!moved && Math.sqrt(dx*dx+dy*dy) > 6){ moved = true; startDrag(wrap, ev.clientX, ev.clientY); }
+        if(moved) moveDrag(ev.clientX, ev.clientY);
+      }
+      function onUp(ev){
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+        if(moved){ endDrag(wrap); }
+      }
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+    });
+
+    // ── MOBILE: long-press then drag ──
+    wrap.addEventListener('touchstart', function(e){
+      var touch = e.touches[0];
+      startX = touch.clientX; startY = touch.clientY;
+      longPressTimer = setTimeout(function(){
+        longPressTimer = null;
+        startDrag(wrap, startX, startY);
+      }, 400);
+    }, {passive: true});
+
+    wrap.addEventListener('touchmove', function(e){
+      var touch = e.touches[0];
+      var dx = touch.clientX - startX, dy = touch.clientY - startY;
+      if(longPressTimer && Math.sqrt(dx*dx+dy*dy) > 8){
+        clearTimeout(longPressTimer); longPressTimer = null;
+      }
+      if(isDragging){
+        e.preventDefault();
+        moveDrag(touch.clientX, touch.clientY);
+      }
+    }, {passive: false});
+
+    wrap.addEventListener('touchend', function(e){
+      if(longPressTimer){ clearTimeout(longPressTimer); longPressTimer = null; }
+      if(isDragging) endDrag(wrap);
+    });
+
+    wrap.addEventListener('touchcancel', function(){
+      if(longPressTimer){ clearTimeout(longPressTimer); longPressTimer = null; }
+      cancelDrag(wrap);
+    });
+  };
+})();
+
+// ── PROFILE SYSTEM ────────────────────────────────────
+const PROFILE_KEY = 'tt_profile'; // stores current profile pid or 'manager'
+
+function getCurrentProfile(){
+  return localStorage.getItem(PROFILE_KEY) || null;
+}
+function setCurrentProfile(pid){
+  localStorage.setItem(PROFILE_KEY, pid);
+  updateProfileBtn();
+  render();
+  refreshBadge();
+  if(document.getElementById('modal-actions').classList.contains('open')) buildActionsModal();
+}
+function isManager(){
+  const pid = getCurrentProfile();
+  if(!pid) return false;
+  const p = personById(pid);
+  return p && p.role === 'manager';
+}
+function getViewingAs(){
+  const p = getCurrentProfile();
+  if(!p) return null;
+  const person = personById(p);
+  if(person && person.role === 'manager') return null; // manager sees all
+  return p; // officer or assistant — filtered view
+}
+
+function updateProfileBtn(){
+  const btn = document.getElementById('btn-profile');
+  const bar = document.getElementById('profile-bar');
+  const pid = getCurrentProfile();
+  const person = pid ? personById(pid) : null;
+  const personIsManager = person && person.role === 'manager';
+
+  if(bar){
+    bar.classList.remove('show','manager-bar');
+    bar.innerHTML = '';
+    if(pid && personIsManager){
+      bar.classList.add('manager-bar','show');
+      bar.textContent = '👑 ' + (person.name) + ' — seeing all tenders & assignments';
+    } else if(pid && person){
+      bar.classList.add('show');
+      const _role = person.role || 'officer';
+      const _barMsg = _role === 'assistant'
+        ? esc(person.name)+' · Showing your assigned tenders · Today = your stages only'
+        : esc(person.name)+' · Showing your tenders only · Today = your assignments';
+      bar.innerHTML = '<span style="width:16px;height:16px;border-radius:50%;background:'+personColor(pid)+';display:inline-flex;align-items:center;justify-content:center;font-size:8px;font-weight:800;color:#fff">'+esc(initials(person.name))+'</span>&nbsp;'+_barMsg;
+    }
+  }
+
+  if(!btn) return;
+  if(!pid || !person){ btn.innerHTML = '👤'; btn.style.cssText = ''; btn.title = 'Select profile'; return; }
+  const col = personColor(pid);
+  if(personIsManager){
+    btn.innerHTML = '👑';
+    btn.style.background = 'rgba(180,83,9,.15)';
+    btn.style.color = 'var(--yellow)';
+    btn.style.border = '1px solid rgba(180,83,9,.3)';
+    btn.style.padding = '';
+    btn.title = person.name + ' (Manager) — tap to switch';
+  } else {
+    btn.innerHTML = '<span style="width:22px;height:22px;border-radius:50%;background:'+col+';display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:#fff">'+esc(initials(person.name))+'</span>';
+    btn.title = person.name + ' — tap to switch';
+    btn.style.background = col+'18';
+    btn.style.border = '1px solid '+col+'44';
+    btn.style.color = col;
+    btn.style.padding = '5px 8px';
+  }
+}
+
+function openProfilePicker(isFirst){
+  const people = getPeople();
+  const listEl = document.getElementById('profile-list');
+  const titleEl = document.getElementById('profile-modal-title');
+  const subEl = document.getElementById('profile-modal-sub');
+  const closeBtn = document.getElementById('profile-close-btn');
+
+  titleEl.textContent = isFirst ? 'Who are you?' : 'Switch Profile';
+  subEl.textContent = isFirst ? 'Select your profile to get started' : 'Switch to a different view';
+  closeBtn.style.display = isFirst ? 'none' : '';
+
+  if(!people.length){
+    listEl.innerHTML =
+      '<div style="font-size:13px;color:var(--dim);padding:12px 0;text-align:center;line-height:1.7">'+
+        'No people added yet.<br>'+
+        '<span style="color:var(--accent);cursor:pointer;font-weight:600;" id="profile-goto-people">Go to People →</span>'+
+      '</div>';
+    const link = document.getElementById('profile-goto-people');
+    if(link) link.addEventListener('click', function(){
+      closeM('modal-profile');
+      openPeople();
+    });
+    openM('modal-profile');
+    return;
+  }
+
+  const officers   = people.filter(function(p){ return (p.role||'officer') === 'officer'; });
+  const assistants = people.filter(function(p){ return p.role === 'assistant'; });
+  const managers   = people.filter(function(p){ return p.role === 'manager'; });
+
+  const current = getCurrentProfile();
+
+  function makeRow(p, isManager){
+    const col = ASSIGN_COLORS[people.indexOf(p) % ASSIGN_COLORS.length];
+    const isCurrent = current === p.id;
+    const role = p.role || 'officer';
+    const count = (function(){
+      if(isManager) return tenders.length;
+      if(role === 'officer') return tenders.filter(function(t){ return t.owner === p.id; }).length;
+      // assistant: count active stages assigned to this specific person
+      var n = 0;
+      tenders.forEach(function(t){
+        (t.stages||[]).forEach(function(sid){
+          if((t.stageAssigned||{})[sid] === p.id) n++;
+        });
+      });
+      return n;
+    })();
+    const roleLabel = role === 'manager' ? '👑 Manager' : role === 'assistant' ? '🤝 Assistant' : '🧑‍💼 Officer';
+    const roleBg    = role === 'manager' ? 'rgba(180,83,9,.15)' : role === 'assistant' ? 'rgba(26,86,219,.12)' : 'rgba(123,47,190,.15)';
+    const roleCol   = role === 'manager' ? 'var(--yellow)' : role === 'assistant' ? 'var(--accent)' : 'var(--purple)';
+    const countLabel = role === 'assistant' ? 'assigned stages' : 'tender'+(count!==1?'s':'');
+    return '<div class="profile-row '+(isCurrent?'profile-row-active':'')+'" data-pid="'+p.id+'">'+
+      '<div style="width:40px;height:40px;border-radius:50%;background:'+col+';display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#fff;flex-shrink:0;">'+esc(initials(p.name))+'</div>'+
+      '<div style="flex:1;">'+
+        '<div style="font-size:14px;font-weight:700;color:var(--text);">'+esc(p.name)+'</div>'+
+        '<div style="display:flex;align-items:center;gap:6px;margin-top:3px;">'+
+          '<span style="font-size:10px;font-weight:700;font-family:var(--mono);background:'+roleBg+';color:'+roleCol+';padding:2px 6px;border-radius:4px;">'+roleLabel+'</span>'+
+          '<span style="font-size:11px;color:var(--dim);font-family:var(--mono);">'+count+' '+countLabel+'</span>'+
+        '</div>'+
+      '</div>'+
+      (isCurrent?'<span style="color:var(--accent);font-size:12px;font-weight:700;">✓</span>':'')+
+    '</div>';
+  }
+
+  function section(title, items, isManager){
+    if(!items.length) return '';
+    return '<div style="font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--dim);font-family:var(--mono);margin-bottom:8px;margin-top:4px;">'+title+'</div>'+
+      items.map(function(p){ return makeRow(p, isManager); }).join('');
+  }
+
+  listEl.innerHTML =
+    section('Officers', officers, false)+
+    section('Assistants', assistants, false)+
+    section('Management', managers, true)+
+    '<div style="border-top:1px solid var(--border);margin-top:12px;padding-top:12px;">'+
+      '<button id="profile-manage-people" style="background:none;border:none;color:var(--accent);font-size:13px;font-weight:600;cursor:pointer;padding:0;font-family:var(--sans);">⚙ Manage People →</button>'+
+    '</div>';
+
+  // Wire row clicks
+  listEl.querySelectorAll('.profile-row').forEach(function(row){
+    row.addEventListener('click', function(){
+      const pid = this.dataset.pid;
+      setCurrentProfile(pid);
+      closeM('modal-profile');
+    });
+  });
+
+  const mgmtBtn = document.getElementById('profile-manage-people');
+  if(mgmtBtn) mgmtBtn.addEventListener('click', function(){
+    closeM('modal-profile');
+    openPeople();
+  });
+
+  openM('modal-profile');
+}
+
+function openProfileSwitch(){
+  openProfilePicker(false);
+}
+
+// ── Filter actions by profile ─────────────────────────
+function getFilteredActions(t){
+  const acts = getActions(t);
+  const viewAs = getViewingAs();
+  if(!viewAs) return acts; // manager sees all
+
+  const p = personById(viewAs);
+  const role = p ? (p.role || 'officer') : 'officer';
+
+  if(role === 'officer'){
+    // Officers only see actions for their OWN tenders
+    if(t.owner !== viewAs) return [];
+    return acts;
+  }
+
+  if(role === 'assistant'){
+    // Assistants only see actions for tenders where they have a stage assigned
+    const assigned = t.stageAssigned || {};
+    const hasStage = (t.stages||[]).some(function(sid){ return assigned[sid] === viewAs; });
+    if(!hasStage) return [];
+    return acts;
+  }
+
+  return acts;
+}
+
+// ── INIT PROFILE ──────────────────────────────────────
+function initProfile(){
+  const pid = getCurrentProfile();
+  const people = getPeople();
+  if(!pid && people.length > 0){
+    // First time — show picker
+    setTimeout(function(){ openProfilePicker(true); }, 400);
+  } else {
+    updateProfileBtn();
+  }
+}
+
+// ── INIT ──────────────────────────────────────────────
+load();
+buildSelects();
+render();
+const _initCfg = getSyncCfg();
+setSyncDot(_initCfg.token ? 'ok' : 'idle');
+if(_initCfg.token){
+  if(_initCfg.gistId){
+    // Already know the Gist — just pull
+    syncPull(true);
+  } else {
+    // Have token but no gistId (new device) — try to find existing Gist first
+    setSyncDot('busy');
+    findOrCreateGistId().then(function(gistId){
+      if(gistId){
+        syncPull(true); // found it — pull data
+      } else {
+        setSyncDot('ok'); // no Gist yet — first device, will be created on first push
+      }
+    });
+  }
+}
+initProfile();
+</script>
+</body>
+</html>
