@@ -511,7 +511,7 @@ if('serviceWorker' in navigator){
   <div class="hdr-row1">
     <div class="brand"><div class="brand-pip">📋</div>TenderTrack</div>
     <button class="btn-theme" id="btn-theme" onclick="toggleTheme()" title="Toggle theme">🌙</button>
-    <a class="btn-emd" href="emd.html">💰 EMD</a>
+    <button class="btn-emd" onclick="openWorkload()">📊 Workload</button>
     <button class="btn-theme" id="btn-profile" onclick="openProfileSwitch()" title="Switch profile" style="font-size:13px;padding:6px 10px;">👤</button>
     <button class="btn-add" onclick="openAdd()">+ Add</button>
   </div>
@@ -573,6 +573,8 @@ if('serviceWorker' in navigator){
       <input type="number" class="fi" id="f-emd" placeholder="e.g. 50000" inputmode="numeric"></div>
     <div class="fsec">Key Dates</div>
     <div class="fgrid">
+      <div class="frow"><label class="fl">Pre-Bid Date</label><input type="date" class="fi" id="f-pre-bid"></div>
+      <div class="frow"><label class="fl">Negotiation Date</label><input type="date" class="fi" id="f-nego-date"></div>
       <div class="frow"><label class="fl">Sale End</label><input type="date" class="fi" id="f-sale-end"></div>
       <div class="frow"><label class="fl">Tech Bid Opening</label><input type="date" class="fi" id="f-tech-bid"></div>
       <div class="frow"><label class="fl">Price Bid Opening</label><input type="date" class="fi" id="f-price-bid"></div>
@@ -808,11 +810,14 @@ const STAGES = [
   {id:11, label:'CBA Checking',                                          color:'#38bdf8'},
   {id:12, label:'TC / Proposal for PBO Under Preparation',               color:'var(--red)'},
   {id:13, label:'TC / Proposal for PBO Put Up',                          color:'#fde68a'},
+  {id:32, label:'PBO Freeze Pending',                                     color:'#a78bfa'},
   {id:14, label:'Evaluation Freezed e-Tender/GeM. PBO Scheduled',        color:'#34d399'},
   {id:15, label:'Price Bid Opened. Under Reverse Auction',               color:'#4ade80'},
   {id:16, label:'Price Bids Opened. Under Estimate Review',              color:'#86efac'},
   {id:17, label:'Price Negotiation Approval Put Up',                     color:'var(--yellow)'},
   {id:31, label:'Under Negotiation',                                      color:'#f59e0b'},
+  {id:33, label:'MOM Sign Pending',                                        color:'#f472b6'},
+  {id:34, label:'GeM Negotiated Rate Update',                               color:'#86efac'},
   {id:18, label:'Price Workability Awaited from Indenter',               color:'#fb7185'},
   {id:19, label:'Price Workability Awaited from Bidder',                 color:'#f97316'},
   {id:20, label:'Price Reasonability Awaited',                           color:'#e879f9'},
@@ -1132,6 +1137,11 @@ function openPeople(){
   openM('modal-people');
 }
 
+function openWorkload(){
+  switchPeopleTab('workload');
+  openM('modal-people');
+}
+
 function switchPeopleTab(tab){
   const isManage = tab === 'manage';
   document.getElementById('people-tab-manage-body').style.display  = isManage  ? '' : 'none';
@@ -1155,73 +1165,95 @@ function renderWorkload(){
     return;
   }
 
-  // Build workload map: pid → [ {tender, sid} ]
+  // Build workload map: pid → [{tender, sid}]
   const workMap = {};
   people.forEach(function(p){ workMap[p.id] = []; });
-
   tenders.forEach(function(t){
     const assigned = t.stageAssigned || {};
     Object.keys(assigned).forEach(function(sidStr){
       const pid = assigned[sidStr];
       const sid = parseInt(sidStr);
       if(workMap[pid] && t.stages.includes(sid)){
-        workMap[pid].push({ t: t, sid: sid });
+        workMap[pid].push({t:t, sid:sid});
       }
     });
   });
 
-  el.innerHTML = people.map(function(p, i){
-    const col   = ASSIGN_COLORS[i % ASSIGN_COLORS.length];
-    const items = workMap[p.id] || [];
-    const count = items.length;
+  // Officer workload: count tenders owned
+  const officerTenders = {};
+  people.forEach(function(p){ officerTenders[p.id] = []; });
+  tenders.forEach(function(t){
+    if(t.owner && officerTenders[t.owner]) officerTenders[t.owner].push(t);
+  });
 
-    // Sort items by tender no
+  function makePersonCard(p, i){
+    const col   = ASSIGN_COLORS[i % ASSIGN_COLORS.length];
+    const role  = p.role || 'officer';
+    const items = workMap[p.id] || [];
+    const ownedTenders = officerTenders[p.id] || [];
+
     items.sort(function(a,b){ return a.t.no.localeCompare(b.t.no); });
+    ownedTenders.sort(function(a,b){ return a.no.localeCompare(b.no); });
 
     const bodyId = 'wl-body-'+p.id;
+    const roleLabel = role === 'manager' ? '👑 Manager' : role === 'assistant' ? '🤝 Assistant' : '🧑‍💼 Officer';
+    const roleBg    = role === 'manager' ? 'rgba(180,83,9,.15)' : role === 'assistant' ? 'rgba(26,86,219,.12)' : 'rgba(123,47,190,.15)';
+    const roleCol   = role === 'manager' ? 'var(--yellow)' : role === 'assistant' ? 'var(--accent)' : 'var(--purple)';
 
-    const rows = items.map(function(item){
-      const s = sg(item.sid);
-      const isHigh = item.t.priority === 'high';
-      const isAF   = item.t.isAF;
-      return '<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;'+
-        'border-radius:8px;background:var(--surface);border:1px solid var(--border);'+
-        'margin-bottom:5px;cursor:pointer;" data-tid="'+item.t.id+'" class="wl-tender-row">'+
-        '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;flex-shrink:0;background:'+s.color+'"></span>'+
-        '<div style="flex:1;min-width:0;">'+
-          '<div style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--text)">'+
-            esc(item.t.no)+
-            (isHigh?' <span style="font-size:10px">🔴</span>':'')+
-            (isAF  ?' <span style="font-size:10px">🔷</span>':'')+
+    let countLabel, count, rows;
+
+    if(role === 'assistant'){
+      count = items.length;
+      countLabel = count + ' stage' + (count!==1?'s':'') + ' assigned';
+      rows = items.map(function(item){
+        const s = sg(item.sid);
+        return '<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;background:var(--surface);border:1px solid var(--border);margin-bottom:5px;cursor:pointer;" data-tid="'+item.t.id+'" class="wl-tender-row">'+
+          '<span style="width:8px;height:8px;border-radius:50%;flex-shrink:0;background:'+s.color+';display:inline-block;"></span>'+
+          '<div style="flex:1;min-width:0;">'+
+            '<div style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--text);">'+esc(item.t.no)+(item.t.priority==='high'?' 🔴':'')+'</div>'+
+            '<div style="font-size:11px;color:var(--dim);font-family:var(--mono);margin-top:1px;">'+esc(s.label)+'</div>'+
           '</div>'+
-          '<div style="font-size:11px;color:var(--dim);font-family:var(--mono);margin-top:1px;">'+esc(s.label)+'</div>'+
-        '</div>'+
-        '<span style="font-size:11px;color:var(--dim)">›</span>'+
-      '</div>';
-    }).join('');
+          '<span style="font-size:11px;color:var(--dim)">›</span>'+
+        '</div>';
+      }).join('') || '<div style="font-size:12px;color:var(--dim);padding:8px 0 4px;font-style:italic;">No stages assigned</div>';
+    } else if(role === 'officer'){
+      count = ownedTenders.length;
+      countLabel = count + ' tender' + (count!==1?'s':'') + ' owned';
+      rows = ownedTenders.map(function(t){
+        const latestSid = t.stages && t.stages.length ? t.stages[t.stages.length-1] : null;
+        const s = latestSid !== null ? sg(latestSid) : null;
+        return '<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;background:var(--surface);border:1px solid var(--border);margin-bottom:5px;cursor:pointer;" data-tid="'+t.id+'" class="wl-tender-row">'+
+          (s ? '<span style="width:8px;height:8px;border-radius:50%;flex-shrink:0;background:'+s.color+';display:inline-block;"></span>' : '')+
+          '<div style="flex:1;min-width:0;">'+
+            '<div style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--text);">'+esc(t.no)+(t.priority==='high'?' 🔴':'')+'</div>'+
+            (s ? '<div style="font-size:11px;color:var(--dim);font-family:var(--mono);margin-top:1px;">'+esc(s.label)+'</div>' : '')+
+          '</div>'+
+          '<span style="font-size:11px;color:var(--dim)">›</span>'+
+        '</div>';
+      }).join('') || '<div style="font-size:12px;color:var(--dim);padding:8px 0 4px;font-style:italic;">No tenders assigned</div>';
+    } else {
+      // Manager
+      count = tenders.length;
+      countLabel = count + ' total tender' + (count!==1?'s':'');
+      rows = '<div style="font-size:12px;color:var(--dim);padding:4px 0;font-style:italic;">Sees all tenders</div>';
+    }
 
-    const emptyMsg = count === 0
-      ? '<div style="font-size:12px;color:var(--dim);padding:8px 0 4px;font-style:italic;">No active assignments</div>'
-      : '';
+    const barPct = Math.min(100, role === 'assistant' ? count * 20 : count * 5);
 
     return '<div style="border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:8px;">'+
-      // Person header — tap to expand/collapse
       '<div class="wl-person-hdr" data-pid="'+p.id+'" style="display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;">'+
-        '<div style="width:36px;height:36px;border-radius:50%;background:'+col+';flex-shrink:0;'+
-          'display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;">'+
-          esc(initials(p.name))+
-        '</div>'+
+        '<div style="width:36px;height:36px;border-radius:50%;background:'+col+';flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;">'+esc(initials(p.name))+'</div>'+
         '<div style="flex:1;">'+
-          '<div style="font-size:14px;font-weight:700;color:var(--text);">'+esc(p.name)+'</div>'+
-          '<div style="font-size:11px;color:var(--dim);font-family:var(--mono);margin-top:1px;">'+
-            count+' active stage'+(count!==1?'s':'')+
+          '<div style="display:flex;align-items:center;gap:6px;">'+
+            '<div style="font-size:14px;font-weight:700;color:var(--text);">'+esc(p.name)+'</div>'+
+            '<span style="font-size:9px;font-weight:700;font-family:var(--mono);background:'+roleBg+';color:'+roleCol+';padding:1px 5px;border-radius:4px;">'+roleLabel+'</span>'+
           '</div>'+
+          '<div style="font-size:11px;color:var(--dim);font-family:var(--mono);margin-top:2px;">'+countLabel+'</div>'+
         '</div>'+
-        // Mini bar showing workload weight
         (count > 0
           ? '<div style="display:flex;align-items:center;gap:6px;">'+
               '<div style="width:60px;height:6px;border-radius:3px;background:var(--border);overflow:hidden;">'+
-                '<div style="height:100%;border-radius:3px;background:'+col+';width:'+Math.min(100, count*20)+'%;"></div>'+
+                '<div style="height:100%;border-radius:3px;background:'+col+';width:'+barPct+'%;"></div>'+
               '</div>'+
               '<span style="font-size:12px;font-weight:700;color:'+col+';font-family:var(--mono);">'+count+'</span>'+
             '</div>'
@@ -1229,14 +1261,27 @@ function renderWorkload(){
         )+
         '<span class="wl-chev" style="font-size:11px;color:var(--dim);margin-left:4px;">▸</span>'+
       '</div>'+
-      // Expandable body
-      '<div class="wl-body" id="'+bodyId+'" style="display:none;padding:0 10px 10px;">'+
-        rows + emptyMsg +
-      '</div>'+
+      '<div class="wl-body" id="'+bodyId+'" style="display:none;padding:0 10px 10px;">'+rows+'</div>'+
     '</div>';
-  }).join('');
+  }
 
-  // Wire toggle for person rows
+  // Separate by role
+  const officers   = people.filter(function(p){ return (p.role||'officer')==='officer'; });
+  const assistants = people.filter(function(p){ return p.role==='assistant'; });
+  const managers   = people.filter(function(p){ return p.role==='manager'; });
+
+  function sectionHtml(title, list){
+    if(!list.length) return '';
+    return '<div style="font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--dim);font-family:var(--mono);margin:12px 0 8px 2px;">'+title+'</div>'+
+      list.map(function(p){ return makePersonCard(p, people.indexOf(p)); }).join('');
+  }
+
+  el.innerHTML =
+    sectionHtml('🤝 Assistants', assistants) +
+    sectionHtml('🧑‍💼 Officers', officers) +
+    sectionHtml('👑 Management', managers);
+
+  // Wire toggle
   el.querySelectorAll('.wl-person-hdr').forEach(function(hdr){
     hdr.addEventListener('click', function(){
       const body = document.getElementById('wl-body-'+this.dataset.pid);
@@ -1247,7 +1292,7 @@ function renderWorkload(){
     });
   });
 
-  // Wire tender rows — open detail
+  // Wire tender rows
   el.querySelectorAll('.wl-tender-row').forEach(function(row){
     row.addEventListener('click', function(){
       closeM('modal-people');
@@ -1320,14 +1365,19 @@ function deletePerson(pid){
   let people = getPeople();
   people = people.filter(function(p){ return p.id!==pid; });
   savePeople(people);
-  // Remove assignments and history entries referencing this person
+  // Track deletion so sync doesn't bring them back
+  try{
+    const del = JSON.parse(localStorage.getItem('tt_people_deleted')||'{}');
+    del[pid] = Date.now();
+    localStorage.setItem('tt_people_deleted', JSON.stringify(del));
+  }catch(e){}
+  // Remove assignments referencing this person
   tenders.forEach(function(t){
     if(t.stageAssigned){
       Object.keys(t.stageAssigned).forEach(function(k){
         if(t.stageAssigned[k]===pid) delete t.stageAssigned[k];
       });
     }
-    // Keep history entries but we leave them as-is (person name shown as "Removed user")
   });
   save(); renderPeopleList(); render();
   schedulePush();
@@ -1451,9 +1501,9 @@ function refreshBadge(){
   const btn   = document.getElementById('btn-today');
   if(!badge || !btn) return;
   const count = todayCount || total;
-  badge.textContent = count;
-  if(count > 0){ btn.classList.add('lit'); }
-  else { btn.classList.remove('lit'); }
+  badge.textContent = todayCount > 0 ? todayCount : (total > 0 ? total : 0);
+  if(count > 0){ btn.classList.add('lit'); badge.style.display = ''; }
+  else { btn.classList.remove('lit'); badge.style.display = 'none'; }
 }
 
 // ── DONE ITEMS (persisted to localStorage, auto-expire at midnight) ─────────
@@ -1579,9 +1629,9 @@ function buildActionsModal(){
   const badge = document.getElementById('today-badge');
   const btn   = document.getElementById('btn-today');
   if(badge && btn){
-    badge.textContent = todayCount || allItems.length;
-    if(allItems.length > 0) btn.classList.add('lit');
-    else btn.classList.remove('lit');
+    badge.textContent = todayCount > 0 ? todayCount : allItems.length;
+    if(allItems.length > 0){ btn.classList.add('lit'); badge.style.display=''; }
+    else { btn.classList.remove('lit'); badge.style.display='none'; }
   }
 
   if(!allItems.length){
@@ -1704,9 +1754,27 @@ function buildActionsModal(){
       + '</div>';
     if(open){
       if(visible.length === 0){
-        html += '<div style="font-size:12px;color:var(--green);padding:10px 4px;font-family:var(--mono)">✓ All items in this section are done</div>';
+        html += '<div style="font-size:12px;color:var(--green);padding:10px 4px;font-family:var(--mono)">✓ All items in this section are done for today</div>';
       } else {
         visible.forEach(function(x){ html += renderItem(x); });
+      }
+      // Show done items below with strikethrough
+      const doneItems = allItems.filter(function(x){
+        return x.a.bucket===g && _doneNow[x.t.id + '_' + x.a.msg];
+      });
+      if(doneItems.length){
+        html += '<div style="margin-top:8px;padding-top:8px;border-top:1px dashed var(--border);">';
+        html += '<div style="font-size:10px;font-weight:700;color:var(--green);font-family:var(--mono);letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px;">✓ Done today</div>';
+        doneItems.forEach(function(x){
+          html += '<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;background:var(--muted);margin-bottom:4px;opacity:.6;">'
+            +'<div style="font-size:16px;">✓</div>'
+            +'<div style="flex:1;">'
+              +'<div style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--dim);text-decoration:line-through;">'+esc(x.t.no)+'</div>'
+              +'<div style="font-size:11px;color:var(--dim);text-decoration:line-through;">'+x.a.msg+'</div>'
+            +'</div>'
+          +'</div>';
+        });
+        html += '</div>';
       }
     }
     html += '</div>';
@@ -1915,6 +1983,8 @@ function openDetail(id){
   const vc  = vdl===null?'':vdl<0?'danger':vdl<=14?'danger':vdl<=30?'warn':'';
 
   const dateRows = [
+    ['Pre-Bid Date',    t.preBid,   ''],
+    ['Negotiation Date',t.negoDate, ''],
     ['Sale End',        t.saleEnd,  ''],
     ['Tech Bid Opening',t.techBid,  ''],
     ['Price Bid Opening',t.priceBid,''],
@@ -2224,7 +2294,9 @@ function fillForm(t){
   document.getElementById('f-stage').value    = t.stages.length ? t.stages[t.stages.length-1] : 0;
   document.getElementById('f-notes').value    = t.notes || '';
   document.getElementById('f-emd').value      = t.emd   || '';
-  document.getElementById('f-sale-end').value = t.saleEnd || '';
+  document.getElementById('f-pre-bid').value   = t.preBid    || '';
+  document.getElementById('f-nego-date').value = t.negoDate  || '';
+  document.getElementById('f-sale-end').value  = t.saleEnd   || '';
   document.getElementById('f-tech-bid').value = t.techBid || '';
   document.getElementById('f-price-bid').value= t.priceBid || '';
   document.getElementById('f-ra').value       = t.ra || '';
@@ -2235,7 +2307,7 @@ function fillForm(t){
 }
 
 function clearForm(){
-  ['f-no','f-notes','f-emd','f-sale-end','f-tech-bid','f-price-bid','f-ra','f-validity','f-tcq']
+  ['f-no','f-notes','f-emd','f-pre-bid','f-nego-date','f-sale-end','f-tech-bid','f-price-bid','f-ra','f-validity','f-tcq']
     .forEach(function(i){ const e=document.getElementById(i); if(e) e.value=''; });
   document.getElementById('f-stage').value = 0;
   setPri(false);
@@ -2310,6 +2382,8 @@ function saveTender(){
     isAF:      document.getElementById('af-toggle').classList.contains('on') || false,
     notes:     document.getElementById('f-notes').value.trim(),
     emd:       document.getElementById('f-emd').value.trim() ? String(Math.round(Number(document.getElementById('f-emd').value))) : '',
+    preBid:    document.getElementById('f-pre-bid').value,
+    negoDate:  document.getElementById('f-nego-date').value,
     saleEnd:   document.getElementById('f-sale-end').value,
     techBid:   document.getElementById('f-tech-bid').value,
     priceBid:  document.getElementById('f-price-bid').value,
@@ -2444,6 +2518,8 @@ function buildSlim(){
     if(t.isAF)     o.af  = true;
     if(t.notes)    o.n   = t.notes;
     if(t.emd)      o.e   = t.emd;
+    if(t.preBid)   o.pb2 = t.preBid;
+    if(t.negoDate) o.nd  = t.negoDate;
     if(t.saleEnd)  o.s   = t.saleEnd;
     if(t.techBid)  o.tb  = t.techBid;
     if(t.priceBid) o.pb  = t.priceBid;
@@ -2467,6 +2543,8 @@ function expandSlim(t){
     isAF:               !!(t.af || t.isAF),
     notes:              t.n   || t.notes    || '',
     emd:                t.e   || t.emd      || '',
+    preBid:             t.pb2 || t.preBid   || '',
+    negoDate:           t.nd  || t.negoDate  || '',
     saleEnd:            t.s   || t.saleEnd  || '',
     techBid:            t.tb  || t.techBid  || '',
     priceBid:           t.pb  || t.priceBid || '',
@@ -2567,7 +2645,14 @@ async function syncPush(silent){
       try{
         const p=JSON.parse(raw);
         if(Array.isArray(p)){ remoteTenders=p.map(expandSlim); }
-        else if(p&&Array.isArray(p.tenders)){ remoteTenders=p.tenders.map(expandSlim); remotePeople=p.people||[]; remoteDeleted=p.deleted||{}; }
+        else if(p&&Array.isArray(p.tenders)){ remoteTenders=p.tenders.map(expandSlim); remotePeople=p.people||[]; remoteDeleted=p.deleted||{};
+          // Merge remote people tombstones locally
+          const rPplDel=p.peopleDeleted||{};
+          if(Object.keys(rPplDel).length){
+            const lPplDel=JSON.parse(localStorage.getItem('tt_people_deleted')||'{}');
+            localStorage.setItem('tt_people_deleted',JSON.stringify(Object.assign({},lPplDel,rPplDel)));
+          }
+        }
       }catch(e){}
     }
     // Merge deletions
@@ -2579,12 +2664,15 @@ async function syncPush(silent){
     remoteTenders.forEach(function(t){ if(!allDeleted[t.id]) map[t.id]=t; });
     tenders.forEach(function(t){ if(allDeleted[t.id]) return; const r=map[t.id]; if(!r||ts(t)>ts(r)) map[t.id]=t; });
     const merged=Object.values(map); merged.sort(function(a,b){return ts(b)-ts(a);});
-    // Merge people
-    const pm={}; getPeople().forEach(function(p){pm[p.id]=p;}); remotePeople.forEach(function(p){if(!pm[p.id])pm[p.id]=p;});
+    // Merge people — respect deletion tombstones
+    const pplDel = JSON.parse(localStorage.getItem('tt_people_deleted')||'{}');
+    const pm={}; getPeople().forEach(function(p){if(!pplDel[p.id])pm[p.id]=p;});
+    remotePeople.forEach(function(p){if(!pm[p.id]&&!pplDel[p.id])pm[p.id]=p;});
     const mergedPeople=Object.values(pm);
     tenders=merged; save(); savePeople(mergedPeople); render();
     // Write back
-    const files2={}; files2[SYNC_FILE]={content:JSON.stringify({tenders:buildSlim(),people:mergedPeople,deleted:allDeleted})};
+    const files2={}; const _pplDel=JSON.parse(localStorage.getItem('tt_people_deleted')||'{}');
+    files2[SYNC_FILE]={content:JSON.stringify({tenders:buildSlim(),people:mergedPeople,deleted:allDeleted,peopleDeleted:_pplDel})};
     await gistReq('PATCH','/gists/'+cfg.gistId,{files:files2});
     localStorage.setItem('tt_last_sync',Date.now().toString());
     setSyncDot('ok'); if(!silent) toast('Synced ✓');
@@ -2627,7 +2715,12 @@ async function syncPull(silent){
 
     tenders = filtered.map(expandSlim);
     save();
-    if(peopleArr && peopleArr.length > 0) savePeople(peopleArr);
+    if(peopleArr && peopleArr.length > 0){
+      // Filter out people that were deleted locally
+      const pplDel = JSON.parse(localStorage.getItem('tt_people_deleted')||'{}');
+      const filteredPeople = peopleArr.filter(function(p){ return !pplDel[p.id]; });
+      if(filteredPeople.length > 0) savePeople(filteredPeople);
+    }
     render();
     localStorage.setItem('tt_last_sync', Date.now().toString());
     setSyncDot('ok');
@@ -2748,6 +2841,7 @@ function openSync(){
   html +=
     '<div class="mfoot" style="padding-top:14px;border-top:1px solid var(--border)">'+
       (connected ? '<button id="sp-disc" class="btn-c" style="margin-right:auto;color:var(--red);border-color:rgba(224,90,78,.3)">Disconnect</button>' : '')+
+      '<a href="emd.html" style="margin-right:auto;font-size:12px;color:var(--accent);font-weight:600;text-decoration:none;display:flex;align-items:center;gap:4px;">💰 EMD →</a>'+
       '<button class="btn-c" onclick="closeM(\'modal-sync\')">Cancel</button>'+
       '<button class="btn-s" id="sp-connect">' + (connected ? 'Save Token' : 'Connect') + '</button>'+
     '</div>';
