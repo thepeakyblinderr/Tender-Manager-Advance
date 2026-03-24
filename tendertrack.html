@@ -9,36 +9,35 @@
 <meta name="apple-mobile-web-app-title" content="TenderTrack">
 <link rel="manifest" href="manifest.json">
 <title>TenderTrack</title>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Syne:wght@700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,600;0,700;0,800;1,600&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 :root{
-  --mono:'JetBrains Mono',monospace;--sans:'Plus Jakarta Sans',system-ui,sans-serif;--title:'Syne',system-ui,sans-serif;
+  --mono:'JetBrains Mono',monospace;--sans:'DM Sans',system-ui,sans-serif;--title:'Crimson Pro',Georgia,serif;
   --safe-top:env(safe-area-inset-top,0px);--safe-bot:env(safe-area-inset-bottom,0px);
 }
 [data-theme="dark"]{
-  --bg:#0f0f0e;--surface:#1a1a18;--card:#1a1a18;--card2:#242422;
-  --border:#2a2a28;--border2:#3a3a36;
-  --text:#f0f0ec;--dim:#8a8a80;--muted:#242422;
-  --accent:#4d80e6;--accent2:#6b9ef8;--glow:rgba(77,128,230,.2);
-  --green:#2ea878;--red:#e05a4e;--yellow:#d4900a;--purple:#a06cd5;
-  --grad1:rgba(77,128,230,.10);--grad2:rgba(160,108,213,.06);--grad3:rgba(46,168,120,.04);
+  --bg:#0d1117;--surface:#161b22;--card:#161b22;--card2:#1c2333;
+  --border:#21262d;--border2:#30363d;
+  --text:#e6edf3;--dim:#8b949e;--muted:#1c2333;
+  --accent:#c9a84c;--accent2:#e3c46e;--glow:rgba(201,168,76,.18);
+  --green:#3fb950;--red:#f85149;--yellow:#d29922;--purple:#bc8cff;
+  --grad1:rgba(201,168,76,.08);--grad2:rgba(63,185,80,.03);--grad3:rgba(201,168,76,.03);
 }
 [data-theme="light"]{
-  --bg:#f5f5f3;--surface:#ffffff;--card:#ffffff;--card2:#f0f0ee;
-  --border:#e4e4e0;--border2:#c8c8be;
-  --text:#0a0a0a;--dim:#6a6a60;--muted:#f0f0ee;
-  --accent:#1a56db;--accent2:#2563eb;--glow:rgba(26,86,219,.15);
-  --green:#047857;--red:#c0392b;--yellow:#b45309;--purple:#7B2FBE;
-  --grad1:rgba(26,86,219,.06);--grad2:rgba(123,47,190,.04);--grad3:rgba(4,120,87,.03);
+  --bg:#f6f4f0;--surface:#ffffff;--card:#ffffff;--card2:#f0ede8;
+  --border:#e2ddd8;--border2:#c8c0b8;
+  --text:#1a1410;--dim:#6b6560;--muted:#f0ede8;
+  --accent:#8b6914;--accent2:#a07820;--glow:rgba(139,105,20,.15);
+  --green:#166534;--red:#991b1b;--yellow:#92400e;--purple:#6d28d9;
+  --grad1:rgba(139,105,20,.06);--grad2:rgba(22,101,52,.02);--grad3:rgba(139,105,20,.03);
 }
 html,body{height:100%;}
 body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;
   transition:background .2s,color .2s;
   background-image:
-    radial-gradient(ellipse 80% 60% at 50% -10%,var(--grad1) 0%,transparent 60%),
-    radial-gradient(ellipse 50% 40% at 90% 90%,var(--grad2) 0%,transparent 55%),
-    radial-gradient(ellipse 30% 30% at 10% 60%,var(--grad3) 0%,transparent 50%);}
+    radial-gradient(ellipse 70% 45% at 50% -5%,var(--grad1) 0%,transparent 65%),
+    radial-gradient(ellipse 35% 25% at 95% 95%,var(--grad2) 0%,transparent 55%);}
 
 
 /* ── DESKTOP LAYOUT ─────────────────────────────────── */
@@ -115,15 +114,15 @@ header .page-wrap{display:flex;flex-direction:column;}
 /* Profile rows */
 .profile-row{display:flex;align-items:center;gap:12px;padding:12px;border-radius:12px;
   border:1px solid var(--border);background:var(--surface);cursor:pointer;margin-bottom:8px;transition:all .15s;}
-.profile-row:hover{border-color:var(--accent);background:rgba(77,128,230,.06);}
-.profile-row-active{border-color:var(--accent)!important;background:rgba(77,128,230,.08)!important;}
+.profile-row:hover{border-color:var(--accent);background:rgba(201,168,76,.05);}
+.profile-row-active{border-color:var(--accent)!important;background:rgba(201,168,76,.07)!important;}
 /* Chip highlight for current user's assignments */
-[data-theme="dark"] .tchip.p-mine{box-shadow:0 0 0 2px var(--accent);}
-[data-theme="light"] .tchip.p-mine{box-shadow:0 0 0 2px var(--accent);}
+[data-theme="dark"] .tchip.p-mine{box-shadow:0 0 0 2px var(--accent),0 0 8px rgba(201,168,76,.3);}
+[data-theme="light"] .tchip.p-mine{box-shadow:0 0 0 2px var(--accent),0 0 8px rgba(139,105,20,.25);}
 /* Profile indicator bar */
 #profile-bar{display:none;align-items:center;justify-content:center;gap:8px;
   padding:5px 0;font-size:11px;font-family:var(--mono);font-weight:600;
-  background:rgba(77,128,230,.1);border-bottom:1px solid rgba(77,128,230,.2);color:var(--accent);}
+  background:rgba(201,168,76,.07);border-bottom:1px solid rgba(201,168,76,.18);color:var(--accent);letter-spacing:.2px;}
 #profile-bar.manager-bar{background:rgba(180,83,9,.1);border-color:rgba(180,83,9,.2);color:var(--yellow);}
 #profile-bar.show{display:flex;}
 
@@ -156,7 +155,7 @@ header .page-wrap{display:flex;flex-direction:column;}
 .assign-history-when{font-size:10px;color:var(--dim);font-family:var(--mono);flex-shrink:0;}
 
 /* HEADER */
-header{position:sticky;top:0;z-index:50;
+header{position:sticky;top:0;z-index:50;border-bottom:2px solid var(--accent)!important;
   backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px);
   border-bottom:1px solid var(--border);padding:0 16px;padding-top:var(--safe-top);
   transition:background .2s,border-color .2s,box-shadow .2s;}
@@ -164,9 +163,9 @@ header{position:sticky;top:0;z-index:50;
 [data-theme="light"] header{background:rgba(245,245,243,.94);box-shadow:0 1px 12px rgba(0,0,0,.06);}
 .hdr-row1{display:flex;align-items:center;height:48px;gap:8px;}
 .hdr-row2{display:flex;align-items:center;height:40px;gap:6px;padding-bottom:6px;}
-.brand{display:flex;align-items:center;gap:9px;flex:1;min-width:0;font-family:var(--title);font-size:15px;font-weight:800;color:var(--text);letter-spacing:-.2px;}
+.brand{display:flex;align-items:center;gap:10px;flex:1;min-width:0;font-family:var(--title);font-size:19px;font-weight:700;color:var(--text);letter-spacing:.4px;}
 .brand-pip{width:26px;height:26px;border-radius:8px;flex-shrink:0;
-  background:linear-gradient(135deg,var(--purple),#c084fc);
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
   display:flex;align-items:center;justify-content:center;font-size:13px;
   box-shadow:0 2px 10px rgba(123,47,190,.4);}
 .hdr-search{flex:1;min-width:0;background:var(--surface);border:1px solid var(--border2);
@@ -199,12 +198,12 @@ header{position:sticky;top:0;z-index:50;
 .btn-today{position:relative;background:var(--surface);border:1px solid var(--border2);
   border-radius:9px;padding:7px 13px;color:var(--dim);font-family:var(--sans);font-size:13px;font-weight:600;
   cursor:pointer;white-space:nowrap;flex-shrink:0;-webkit-appearance:none;transition:all .15s,background .2s;}
-.btn-today.lit{color:var(--accent);border-color:rgba(77,128,230,.45);box-shadow:0 0 12px rgba(77,128,230,.12);}
+.btn-today.lit{color:var(--accent);border-color:rgba(201,168,76,.4);box-shadow:0 0 10px rgba(201,168,76,.12);}
 .today-badge{position:absolute;top:-5px;right:-5px;background:var(--accent);color:#fff;
   border-radius:10px;padding:1px 5px;font-size:9px;font-weight:700;border:2px solid var(--bg);line-height:1.4;display:none;}
 .btn-today.lit .today-badge{display:block;}
 
-.btn-add{background:var(--purple);border:none;
+.btn-add{background:var(--accent);border:none;
   border-radius:9px;padding:8px 16px;color:#fff;font-family:var(--sans);font-size:13px;font-weight:700;
   cursor:pointer;white-space:nowrap;flex-shrink:0;-webkit-appearance:none;margin-left:auto;
   box-shadow:0 2px 12px rgba(123,47,190,.35);transition:box-shadow .15s,transform .1s;}
@@ -215,7 +214,7 @@ main{padding:16px;padding-bottom:calc(30px + var(--safe-bot));}
 /* STATS */
 .stats-row{display:flex;gap:8px;margin-bottom:16px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
 .stats-row::-webkit-scrollbar{display:none;}
-.stat-chip{display:flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--border2);
+.stat-chip{display:flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--border2);text-transform:uppercase;letter-spacing:.4px;
   border-radius:12px;padding:9px 14px;font-family:var(--mono);font-size:11px;color:var(--dim);white-space:nowrap;flex-shrink:0;cursor:default;
   transition:background .2s,border-color .2s;}
 .stat-chip b{color:var(--text);font-size:14px;}
@@ -224,18 +223,18 @@ main{padding:16px;padding-bottom:calc(30px + var(--safe-bot));}
 /* BOARD */
 .board{display:flex;flex-direction:column;gap:2px;}
 .srow{border-radius:12px;padding:10px 12px;transition:background .15s,border-color .15s;}
-[data-theme="dark"] .srow.has-items{background:var(--surface);border:1px solid var(--border2);}
-[data-theme="light"] .srow.has-items{background:#fff;border:1px solid var(--border);box-shadow:0 1px 6px rgba(0,0,0,.06);}
+[data-theme="dark"] .srow.has-items{background:var(--surface);border:1px solid var(--border2);border-left:3px solid var(--accent);}
+[data-theme="light"] .srow.has-items{background:#fff;border:1px solid var(--border);border-left:3px solid var(--accent);box-shadow:0 2px 8px rgba(139,105,20,.07);}
 .srow.no-items{background:transparent;border:1px solid transparent;}
 .srow-label{display:flex;align-items:center;gap:9px;padding-bottom:8px;}
 .srow.no-items .srow-label{padding-bottom:0;}
 .srow-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
-.srow-name{font-family:var(--mono);font-size:11px;font-weight:500;line-height:1.3;color:var(--dim);flex:1;}
+.srow-name{font-family:var(--sans);font-size:10px;font-weight:600;line-height:1.3;color:var(--dim);flex:1;letter-spacing:.4px;text-transform:uppercase;}
 [data-theme="dark"] .srow.has-items .srow-name{color:var(--text);font-weight:600;}
 [data-theme="light"] .srow.has-items .srow-name{color:var(--text);font-weight:700;}
 .srow-cnt{font-family:var(--mono);font-size:10px;font-weight:700;border-radius:20px;padding:2px 9px;color:var(--dim);flex-shrink:0;background:var(--muted);}
-[data-theme="dark"] .srow.has-items .srow-cnt{background:rgba(77,128,230,.14);border:1px solid rgba(77,128,230,.3);color:var(--accent2);}
-[data-theme="light"] .srow.has-items .srow-cnt{background:rgba(26,86,219,.1);border:1px solid rgba(26,86,219,.25);color:var(--accent);}
+[data-theme="dark"] .srow.has-items .srow-cnt{background:rgba(201,168,76,.12);border:1px solid rgba(201,168,76,.3);color:var(--accent2);}
+[data-theme="light"] .srow.has-items .srow-cnt{background:rgba(139,105,20,.1);border:1px solid rgba(139,105,20,.25);color:var(--accent);}
 .srow-chips{display:flex;flex-wrap:wrap;gap:6px;padding:0 2px;}
 
 /* CHIP */
@@ -315,10 +314,8 @@ main{padding:16px;padding-bottom:calc(30px + var(--safe-bot));}
 .overlay.open .modal{transform:translateY(0);}
 .modal::-webkit-scrollbar{width:0;}
 .mfoot{position:sticky;bottom:0;background:var(--card);padding-top:12px;margin-top:8px;}
-.modal::before{content:'';display:block;width:40px;height:4px;border-radius:2px;
-  background:var(--border2);margin:0 auto 20px;}
 .mh{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
-.mt{font-family:var(--title);font-size:16px;font-weight:800;color:var(--text);letter-spacing:-.1px;}
+.mt{font-family:var(--title);font-size:20px;font-weight:700;color:var(--text);letter-spacing:.4px;}
 .xbtn{background:var(--card2);border:1px solid var(--border2);border-radius:8px;width:32px;height:32px;
   display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--dim);font-size:18px;flex-shrink:0;
   transition:background .15s;}
@@ -338,7 +335,7 @@ textarea.fi{resize:vertical;min-height:60px;font-size:14px;}
 .fgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
 .fgrid .frow{margin-bottom:0;}
 @media(max-width:380px){.fgrid{grid-template-columns:1fr;}}
-.fsec{font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--purple);
+.fsec{font-size:10px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--accent);
   font-family:var(--mono);padding:12px 0 8px;border-top:1px solid var(--border);}
 
 /* PRIORITY TOGGLE */
@@ -367,7 +364,7 @@ textarea.fi{resize:vertical;min-height:60px;font-size:14px;}
 .mfoot{display:flex;justify-content:flex-end;gap:8px;margin-top:18px;padding-top:14px;border-top:1px solid var(--border);}
 .btn-c{background:var(--card2);border:1px solid var(--border2);border-radius:10px;padding:10px 18px;
   color:var(--dim);font-family:var(--sans);font-size:14px;font-weight:500;cursor:pointer;-webkit-appearance:none;transition:background .15s;}
-.btn-s{background:var(--purple);border:none;border-radius:10px;
+.btn-s{background:var(--accent);border:none;border-radius:8px;
   padding:10px 22px;color:#fff;font-family:var(--sans);font-size:14px;font-weight:700;cursor:pointer;-webkit-appearance:none;
   box-shadow:0 2px 12px rgba(123,47,190,.3);transition:box-shadow .15s,transform .1s;}
 .btn-del{background:var(--red);border:none;border-radius:10px;
@@ -378,7 +375,7 @@ textarea.fi{resize:vertical;min-height:60px;font-size:14px;}
   padding:10px 16px;color:#fff;font-family:var(--sans);font-size:13px;font-weight:700;cursor:pointer;flex:1;-webkit-appearance:none;}
 
 /* DETAIL */
-.detail-no{font-family:var(--title);font-size:20px;font-weight:800;color:var(--text);margin-bottom:10px;}
+.detail-no{font-family:var(--title);font-size:26px;font-weight:700;color:var(--text);margin-bottom:10px;letter-spacing:.5px;}
 .detail-stages{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;}
 .detail-sec{font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--purple);
   font-family:var(--mono);padding:10px 0 8px;border-top:1px solid var(--border);}
@@ -516,7 +513,7 @@ if('serviceWorker' in navigator){
     <button class="btn-add" onclick="openAdd()">+ Add</button>
   </div>
   <div class="hdr-row2">
-    <input class="hdr-search" id="search" placeholder="Search tender or amount…" oninput="render()">
+    <input class="hdr-search" id="search" placeholder="Search tender, stage or amount…" oninput="render()">
     <button class="btn-sync" id="btn-sync" onclick="openSync()">
       <span class="sync-dot" id="sync-dot"></span>Sync
     </button>
@@ -573,6 +570,7 @@ if('serviceWorker' in navigator){
       <input type="number" class="fi" id="f-emd" placeholder="e.g. 50000" inputmode="numeric"></div>
     <div class="fsec">Key Dates</div>
     <div class="fgrid">
+      <div class="frow"><label class="fl">File Received Date</label><input type="date" class="fi" id="f-file-received"></div>
       <div class="frow"><label class="fl">Pre-Bid Date</label><input type="date" class="fi" id="f-pre-bid"></div>
       <div class="frow"><label class="fl">Negotiation Date</label><input type="date" class="fi" id="f-nego-date"></div>
       <div class="frow"><label class="fl">Sale End</label><input type="date" class="fi" id="f-sale-end"></div>
@@ -693,7 +691,6 @@ if('serviceWorker' in navigator){
 <!-- PROFILE PICKER -->
 <div class="overlay" id="modal-profile" style="z-index:200">
   <div class="modal" style="max-width:380px">
-    <div class="modal-drag" style="width:40px;height:4px;border-radius:2px;background:var(--border2);margin:0 auto 20px;"></div>
     <div class="mh">
       <div class="mt" id="profile-modal-title">Who are you?</div>
       <button class="xbtn" id="profile-close-btn" style="display:none" onclick="closeM('modal-profile')">×</button>
@@ -706,7 +703,6 @@ if('serviceWorker' in navigator){
 <!-- PEOPLE MANAGEMENT -->
 <div class="overlay" id="modal-people">
   <div class="modal">
-    <div class="modal-drag" style="width:40px;height:4px;border-radius:2px;background:var(--border2);margin:0 auto 20px;"></div>
     <div class="mh">
       <div class="mt">👥 People</div>
       <button class="xbtn" onclick="closeM('modal-people')">×</button>
@@ -756,7 +752,6 @@ if('serviceWorker' in navigator){
 <!-- ASSIGN PERSON TO STAGE -->
 <div class="overlay" id="modal-assign">
   <div class="modal" style="max-width:400px">
-    <div class="modal-drag" style="width:40px;height:4px;border-radius:2px;background:var(--border2);margin:0 auto 20px;"></div>
     <div class="mh">
       <div class="mt" id="assign-modal-title">Assign Stage</div>
       <button class="xbtn" onclick="closeM('modal-assign')">×</button>
@@ -801,6 +796,8 @@ const STAGES = [
   {id:2 , label:'Tender Under Prep',                                     color:'#7dd3fc'},
   {id:3 , label:'Tender Under Approval',                                 color:'#60a5fa'},
   {id:4 , label:'Tender on Sale',                                        color:'#38bdf8'},
+  {id:35, label:'Offer Forwarding',                                      color:'#67e8f9'},
+  {id:36, label:'CBA Preparation',                                       color:'#22d3ee'},
   {id:5 , label:'Under Technical Evaluation',                            color:'#93c5fd'},
   {id:6 , label:'Offers Under Evaluation in Contract Cell',              color:'#c084fc'},
   {id:7 , label:'TR Observations Sent for Review',                       color:'var(--yellow)'},
@@ -1860,9 +1857,16 @@ function render(){
     if(pFilter === 'high' && t.priority !== 'high') return false;
     if(pFilter === 'af'   && !t.isAF) return false;
     if(!q) return true;
-    return t.no.toLowerCase().includes(q) ||
-           (t.notes||'').toLowerCase().includes(q) ||
-           (t.emd||'').toString().includes(q);
+    // Search: tender no, notes, EMD amount, stage name
+    if(t.no.toLowerCase().includes(q)) return true;
+    if((t.notes||'').toLowerCase().includes(q)) return true;
+    if((t.emd||'').toString().includes(q)) return true;
+    // Search by stage label
+    if((t.stages||[]).some(function(sid){
+      const s = sg(sid);
+      return s && s.label.toLowerCase().includes(q);
+    })) return true;
+    return false;
   });
 
   const activeStages = new Set(list.flatMap(function(t){ return t.stages; }));
@@ -1898,6 +1902,9 @@ function render(){
   STAGES.forEach(function(s){
     const items = map[s.id];
     const has   = items.length > 0;
+
+    // When searching, hide empty stages entirely — no need to scroll past them
+    if(q && !has) return;
 
     const srow = document.createElement('div');
     srow.className = 'srow ' + (has ? 'has-items' : 'no-items');
@@ -1944,11 +1951,27 @@ function render(){
         // Profile only affects Today tab filtering
         chip.className = 'tchip' + (h ? ' p-high' : '') + (isMine ? ' p-mine' : '');
 
+        // File age badge — days since fileReceived date
+        let fileAgeBadge = '';
+        if(t.fileReceived){
+          const _rcvd = new Date(t.fileReceived);
+          _rcvd.setHours(0,0,0,0);
+          const _now2 = new Date(); _now2.setHours(0,0,0,0);
+          const _fileAge = Math.round((_now2 - _rcvd) / 86400000);
+          const _ageCol = _fileAge > 60 ? '#f87171' : _fileAge > 30 ? '#fbbf24' : '#94a3b8';
+          fileAgeBadge = ' <span style="font-size:9px;font-weight:700;font-family:var(--mono);'
+            + 'background:' + _ageCol + '22;color:' + _ageCol + ';'
+            + 'border:1px solid ' + _ageCol + '44;border-radius:4px;padding:0 4px;'
+            + 'vertical-align:middle;" title="File age: ' + _fileAge + ' days since received">'
+            + _fileAge + 'd</span>';
+        }
+
         const assigneeBadge = assignedP
           ? ' <span class="tchip-assignee" style="background:'+personColor(assignedPid)+'" title="'+esc(assignedP.name)+'">'+esc(initials(assignedP.name))+'</span>'
           : '';
         chip.innerHTML = '<span class="tchip-dot" style="background:' + s.color + ';box-shadow:0 0 4px ' + s.color + '88"></span>'
           + esc(t.no)
+          + fileAgeBadge
           + (t.isAF ? ' <span style="font-size:10px" title="AF File">🔷</span>' : '')
           + (w ? ' <span style="font-size:10px">\u26A0</span>' : '')
           + assigneeBadge;
@@ -1983,6 +2006,7 @@ function openDetail(id){
   const vc  = vdl===null?'':vdl<0?'danger':vdl<=14?'danger':vdl<=30?'warn':'';
 
   const dateRows = [
+    ['File Received',   t.fileReceived, ''],
     ['Pre-Bid Date',    t.preBid,   ''],
     ['Negotiation Date',t.negoDate, ''],
     ['Sale End',        t.saleEnd,  ''],
@@ -2074,6 +2098,23 @@ function openDetail(id){
   document.getElementById('detail-body').innerHTML =
     ownerBanner+
     '<div class="detail-no">'+esc(t.no)+'</div>'+
+    // File age bar — only shown if fileReceived is set
+    (t.fileReceived ? (function(){
+      const rcvd = new Date(t.fileReceived); rcvd.setHours(0,0,0,0);
+      const now3 = new Date(); now3.setHours(0,0,0,0);
+      const age = Math.round((now3 - rcvd) / 86400000);
+      const col = age > 60 ? '#f87171' : age > 30 ? '#fbbf24' : '#34d399';
+      return '<div style="display:flex;align-items:center;gap:10px;padding:9px 13px;'
+        +'background:'+col+'11;border:1px solid '+col+'33;border-radius:10px;margin-bottom:10px;">'
+        +'<div style="flex:1;">'
+          +'<div style="font-size:11px;color:var(--dim);font-family:var(--mono);margin-bottom:2px;">File Age</div>'
+          +'<div style="font-size:13px;font-weight:800;font-family:var(--mono);color:'+col+';">'+age+' days</div>'
+        +'</div>'
+        +'<div style="font-size:11px;color:var(--dim);font-family:var(--mono);text-align:right;">'
+          +'Received: '+fmt(t.fileReceived)
+        +'</div>'
+      +'</div>';
+    })() : '')+
     '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">'+
     (t.priority==='high'?
       '<div style="display:inline-flex;align-items:center;gap:6px;background:rgba(185,28,28,.15);'+
@@ -2294,7 +2335,8 @@ function fillForm(t){
   document.getElementById('f-stage').value    = t.stages.length ? t.stages[t.stages.length-1] : 0;
   document.getElementById('f-notes').value    = t.notes || '';
   document.getElementById('f-emd').value      = t.emd   || '';
-  document.getElementById('f-pre-bid').value   = t.preBid    || '';
+  document.getElementById('f-file-received').value = t.fileReceived || '';
+  document.getElementById('f-pre-bid').value        = t.preBid    || '';
   document.getElementById('f-nego-date').value = t.negoDate  || '';
   document.getElementById('f-sale-end').value  = t.saleEnd   || '';
   document.getElementById('f-tech-bid').value = t.techBid || '';
@@ -2307,7 +2349,7 @@ function fillForm(t){
 }
 
 function clearForm(){
-  ['f-no','f-notes','f-emd','f-pre-bid','f-nego-date','f-sale-end','f-tech-bid','f-price-bid','f-ra','f-validity','f-tcq']
+  ['f-no','f-notes','f-emd','f-file-received','f-pre-bid','f-nego-date','f-sale-end','f-tech-bid','f-price-bid','f-ra','f-validity','f-tcq']
     .forEach(function(i){ const e=document.getElementById(i); if(e) e.value=''; });
   document.getElementById('f-stage').value = 0;
   setPri(false);
@@ -2382,6 +2424,7 @@ function saveTender(){
     isAF:      document.getElementById('af-toggle').classList.contains('on') || false,
     notes:     document.getElementById('f-notes').value.trim(),
     emd:       document.getElementById('f-emd').value.trim() ? String(Math.round(Number(document.getElementById('f-emd').value))) : '',
+    fileReceived: document.getElementById('f-file-received').value,
     preBid:    document.getElementById('f-pre-bid').value,
     negoDate:  document.getElementById('f-nego-date').value,
     saleEnd:   document.getElementById('f-sale-end').value,
@@ -2518,6 +2561,7 @@ function buildSlim(){
     if(t.isAF)     o.af  = true;
     if(t.notes)    o.n   = t.notes;
     if(t.emd)      o.e   = t.emd;
+    if(t.fileReceived) o.fr = t.fileReceived;
     if(t.preBid)   o.pb2 = t.preBid;
     if(t.negoDate) o.nd  = t.negoDate;
     if(t.saleEnd)  o.s   = t.saleEnd;
@@ -2543,6 +2587,7 @@ function expandSlim(t){
     isAF:               !!(t.af || t.isAF),
     notes:              t.n   || t.notes    || '',
     emd:                t.e   || t.emd      || '',
+    fileReceived:       t.fr  || t.fileReceived || '',
     preBid:             t.pb2 || t.preBid   || '',
     negoDate:           t.nd  || t.negoDate  || '',
     saleEnd:            t.s   || t.saleEnd  || '',
@@ -2729,6 +2774,137 @@ async function syncPull(silent){
 }
 
 // ── Export / Import ───────────────────────────────────
+function exportLeadTime(){
+  // Build lead time data using SheetJS (CDN loaded dynamically)
+  function doExport(){
+    const today = new Date(); today.setHours(0,0,0,0);
+
+    // Header row
+    const baseHeaders = [
+      'Tender No','Priority','AF File','Owner',
+      'File Received','Total Age (days)',
+      'Current Stage(s)',
+      'Pre-Bid Date','Negotiation Date','Sale End',
+      'Tech Bid Opening','Price Bid Opening',
+      'Reverse Auction','Bid Validity','TCQ End',
+      'EMD Amount'
+    ];
+
+    // Stage headers — one per stage (days in stage)
+    const stageHeaders = STAGES.map(function(s){ return 'Stage: '+s.label+' (days)'; });
+    const headers = baseHeaders.concat(stageHeaders).concat(['Total Tracked Days (sum of stages)']);
+
+    const rows = tenders.map(function(t){
+      const ownerP = t.owner ? personById(t.owner) : null;
+
+      // Total file age
+      let totalAge = '';
+      if(t.fileReceived){
+        const rcvd = new Date(t.fileReceived); rcvd.setHours(0,0,0,0);
+        totalAge = Math.round((today - rcvd) / 86400000);
+      }
+
+      // Current stages
+      const currentStages = (t.stages||[]).map(function(sid){ return sg(sid).label; }).join(' | ');
+
+      const base = [
+        t.no,
+        t.priority === 'high' ? 'High' : 'Normal',
+        t.isAF ? 'Yes' : 'No',
+        ownerP ? ownerP.name : '',
+        t.fileReceived || '',
+        totalAge,
+        currentStages,
+        t.preBid    || '',
+        t.negoDate  || '',
+        t.saleEnd   || '',
+        t.techBid   || '',
+        t.priceBid  || '',
+        t.ra        || '',
+        t.validity  || '',
+        t.tcq       || '',
+        t.emd ? Number(t.emd) : ''
+      ];
+
+      // Days spent in each stage
+      // For current stages: days since entered
+      // For past stages: not tracked (stageEnteredAt only stores current entry)
+      // We show days in stage for ALL stages the tender is currently in
+      const stageDays = STAGES.map(function(s){
+        if(!(t.stages||[]).includes(s.id)) return '';
+        if(!t.stageEnteredAt || !t.stageEnteredAt[s.id]) return '';
+        const entered = new Date(t.stageEnteredAt[s.id]); entered.setHours(0,0,0,0);
+        return Math.round((today - entered) / 86400000);
+      });
+
+      // Total tracked days = sum of all non-empty stage days
+      const totalTracked = stageDays.reduce(function(sum, d){ return sum + (typeof d === 'number' ? d : 0); }, 0);
+
+      return base.concat(stageDays).concat([totalTracked || '']);
+    });
+
+    // Build workbook
+    const wb = XLSX.utils.book_new();
+
+    // Sheet 1: Lead Time Analysis
+    const wsData = [headers].concat(rows);
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+    // Column widths
+    ws['!cols'] = headers.map(function(h, i){
+      if(i === 0) return {wch:20}; // Tender No
+      if(i === 6) return {wch:30}; // Current stages
+      if(h.startsWith('Stage:')) return {wch:14};
+      return {wch:16};
+    });
+
+    // Freeze first row
+    ws['!freeze'] = {xSplit:0, ySplit:1};
+
+    XLSX.utils.book_append_sheet(wb, ws, 'Lead Time Analysis');
+
+    // Sheet 2: Stage Summary — average days per stage across all tenders
+    const stageSummaryData = [['Stage', 'Tenders Currently In Stage', 'Avg Days in Stage', 'Max Days', 'Min Days']];
+    let totalAvgSum = 0, totalStagesWithData = 0;
+    STAGES.forEach(function(s){
+      const inStage = tenders.filter(function(t){
+        return (t.stages||[]).includes(s.id) && t.stageEnteredAt && t.stageEnteredAt[s.id];
+      });
+      if(!inStage.length){ stageSummaryData.push([s.label,0,'','','']); return; }
+      const daysList = inStage.map(function(t){
+        const entered = new Date(t.stageEnteredAt[s.id]); entered.setHours(0,0,0,0);
+        return Math.round((today - entered) / 86400000);
+      });
+      const avg = Math.round(daysList.reduce(function(a,b){return a+b;},0) / daysList.length);
+      totalAvgSum += avg; totalStagesWithData++;
+      stageSummaryData.push([s.label, inStage.length, avg, Math.max.apply(null,daysList), Math.min.apply(null,daysList)]);
+    });
+    // Add summary row
+    stageSummaryData.push(['']);
+    stageSummaryData.push(['TOTAL / AVERAGE', '', totalStagesWithData ? Math.round(totalAvgSum/totalStagesWithData) : '', '', '']);
+    const ws2 = XLSX.utils.aoa_to_sheet(stageSummaryData);
+    ws2['!cols'] = [{wch:45},{wch:28},{wch:20},{wch:12},{wch:12}];
+    ws2['!freeze'] = {xSplit:0, ySplit:1};
+    XLSX.utils.book_append_sheet(wb, ws2, 'Stage Summary');
+
+    // Download
+    const date = new Date().toISOString().slice(0,10);
+    XLSX.writeFile(wb, 'TenderTrack-LeadTime-'+date+'.xlsx');
+    toast('Excel exported ✓');
+  }
+
+  // Load SheetJS dynamically if not already loaded
+  if(typeof XLSX !== 'undefined'){
+    doExport();
+  } else {
+    const script = document.createElement('script');
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+    script.onload = doExport;
+    script.onerror = function(){ toast('Failed to load Excel library', true); };
+    document.head.appendChild(script);
+  }
+}
+
 function exportData(){
   const payload={tenders:buildSlim(),people:getPeople(),deleted:JSON.parse(localStorage.getItem('tt_deleted')||'{}')};
   const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
@@ -2794,8 +2970,9 @@ function openSync(){
       '</div>'+
       '<div class="fsec">Export / Import (no account needed)</div>'+
       '<div class="sync-acts">'+
-        '<button class="btn-push" id="sp-export" style="background:var(--purple)">⬇ Export JSON</button>'+
-        '<button class="btn-pull" id="sp-import">⬆ Import JSON</button>'+
+        '<button class="btn-push" id="sp-export" style="background:var(--purple)">⬇ JSON</button>'+
+        '<button class="btn-pull" id="sp-import">⬆ JSON</button>'+
+        '<button class="btn-pull" id="sp-excel" style="background:var(--green);color:#fff;border:none;">📊 Excel</button>'+
       '</div>'+
       '<div class="fsec">GitHub Token</div>'+
       '<div class="frow" style="margin-bottom:0">'+
@@ -2833,8 +3010,9 @@ function openSync(){
       '</div>'+
       '<div class="fsec">Or skip accounts — Export / Import</div>'+
       '<div class="sync-acts" style="margin-top:8px">'+
-        '<button class="btn-push" id="sp-export" style="background:var(--purple)">⬇ Export JSON</button>'+
-        '<button class="btn-pull" id="sp-import">⬆ Import JSON</button>'+
+        '<button class="btn-push" id="sp-export" style="background:var(--purple)">⬇ JSON</button>'+
+        '<button class="btn-pull" id="sp-import">⬆ JSON</button>'+
+        '<button class="btn-pull" id="sp-excel" style="background:var(--green);color:#fff;border:none;">📊 Excel</button>'+
       '</div>';
   }
 
@@ -2920,6 +3098,7 @@ function openSync(){
   });
   wire('sp-export', exportData);
   wire('sp-import', importData);
+  wire('sp-excel',  exportLeadTime);
 
   wire('sp-connect', function(){
     const inp = document.getElementById('sp-token');
