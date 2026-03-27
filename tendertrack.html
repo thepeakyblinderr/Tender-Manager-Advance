@@ -242,12 +242,12 @@ main{padding:16px;padding-bottom:calc(30px + var(--safe-bot));}
   background:var(--surface);border:1px solid var(--border2);
   border-radius:10px 0 0 10px;padding:7px 13px;min-height:36px;cursor:pointer;
   font-family:var(--mono);font-size:14px;font-weight:700;color:var(--text);
-  box-shadow:0 2px 8px rgba(0,0,0,.4);transition:all .15s;}
+  box-shadow:0 2px 8px rgba(0,0,0,.4);transition:all .15s;touch-action:manipulation;}
 [data-theme="light"] .tchip{display:inline-flex;align-items:center;gap:6px;
   background:#fff;border:1px solid var(--border);
   border-radius:10px 0 0 10px;padding:7px 13px;min-height:36px;cursor:pointer;
   font-family:var(--mono);font-size:14px;font-weight:700;color:var(--text);
-  box-shadow:0 2px 6px rgba(0,0,0,.09);transition:all .15s;}
+  box-shadow:0 2px 6px rgba(0,0,0,.09);transition:all .15s;touch-action:manipulation;}
 .tchip-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
 [data-theme="dark"] .tchip.p-high{background:rgba(224,90,78,.12);border-color:rgba(224,90,78,.4);color:var(--red);}
 [data-theme="light"] .tchip.p-high{background:rgba(192,57,43,.07);border-color:rgba(192,57,43,.5);color:var(--red);font-weight:700;}
@@ -285,7 +285,17 @@ main{padding:16px;padding-bottom:calc(30px + var(--safe-bot));}
 .board-empty-sub{font-size:13px;}
 
 /* DRAG AND DROP */
-.tchip-wrap{display:inline-flex;align-items:center;touch-action:none;}
+.tchip-wrap{display:inline-flex;align-items:center;touch-action:manipulation;}
+/* Quick stage picker popup */
+.stage-picker{position:fixed;z-index:500;background:var(--surface);border:1px solid var(--border2);
+  border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.25);padding:8px;min-width:220px;max-width:280px;
+  max-height:320px;overflow-y:auto;}
+.stage-picker-title{font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;
+  color:var(--accent);font-family:var(--mono);padding:2px 6px 8px;border-bottom:1px solid var(--border);margin-bottom:6px;}
+.stage-picker-item{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:8px;
+  cursor:pointer;font-size:12px;font-family:var(--sans);font-weight:500;color:var(--text);transition:background .1s;}
+.stage-picker-item:hover{background:var(--muted);}
+.stage-picker-dot{width:7px;height:7px;border-radius:2px;flex-shrink:0;}
 .tchip-wrap.dragging .tchip,.tchip-wrap.dragging .tchip-fu{opacity:0.3;}
 .drag-ghost{
   position:fixed;z-index:9999;pointer-events:none;
@@ -1088,6 +1098,24 @@ function getActions(t){
   const qd = daysLeft(t.tcq);
   dateActions(qd, '📋', 'TCQ End Date', fmt(t.tcq)||'');
 
+  // Pre-Bid / Clarification Date
+  const pbd = daysLeft(t.preBid);
+  if(pbd !== null){
+    if(pbd < 0 && stages.includes(2))
+      push('followup', '➡️', 'Pre-Bid date has passed', 'Update stage if clarification meeting done');
+    else if(pbd >= 0)
+      dateActions(pbd, '📝', 'Pre-Bid Date', fmt(t.preBid)||'');
+  }
+
+  // Negotiation Date
+  const nd = daysLeft(t.negoDate);
+  if(nd !== null){
+    if(nd < 0 && (stages.includes(31)||stages.includes(17)))
+      push('followup', '➡️', 'Negotiation date has passed', 'Update stage after negotiation');
+    else if(nd >= 0)
+      dateActions(nd, '🤝', 'Negotiation Date', fmt(t.negoDate)||'');
+  }
+
   // Manual follow-up reminder
   const fuEntry = getFUFor(t.id);
   if(fuEntry){
@@ -1832,6 +1860,64 @@ function openExpiring(){
   openM('modal-expiring');
 }
 
+// ── QUICK STAGE PICKER (double-click / double-tap chip) ──
+let _stagePickerEl = null;
+function closeStagePicker(){
+  if(_stagePickerEl){ _stagePickerEl.remove(); _stagePickerEl = null; }
+  document.removeEventListener('click', _stagePickerOutside);
+}
+function _stagePickerOutside(e){
+  if(_stagePickerEl && !_stagePickerEl.contains(e.target)) closeStagePicker();
+}
+function openStagePicker(tid, anchorEl){
+  closeStagePicker();
+  const t = tenders.find(function(x){ return x.id===tid; });
+  if(!t) return;
+  const available = STAGES.filter(function(s){
+    return s.id !== 30 && !(t.stages||[]).includes(s.id);
+  });
+  if(!available.length){ toast('All stages already added'); return; }
+
+  const picker = document.createElement('div');
+  picker.className = 'stage-picker';
+  picker.innerHTML = '<div class="stage-picker-title">➕ Add Stage · '+esc(t.no)+'</div>' +
+    available.map(function(s){
+      return '<div class="stage-picker-item" data-sid="'+s.id+'">' +
+        '<span class="stage-picker-dot" style="background:'+s.color+'"></span>' +
+        esc(s.label)+'</div>';
+    }).join('');
+  document.body.appendChild(picker);
+  _stagePickerEl = picker;
+
+  // Position near anchor element
+  const rect = anchorEl.getBoundingClientRect();
+  const pw = picker.offsetWidth, ph = picker.offsetHeight;
+  let top = rect.bottom + 6, left = rect.left;
+  if(left + pw > window.innerWidth - 8) left = window.innerWidth - pw - 8;
+  if(top + ph > window.innerHeight - 8) top = rect.top - ph - 6;
+  if(left < 8) left = 8;
+  picker.style.top = top+'px'; picker.style.left = left+'px';
+
+  picker.querySelectorAll('.stage-picker-item').forEach(function(item){
+    item.addEventListener('click', function(e){
+      e.stopPropagation();
+      const sid = parseInt(this.dataset.sid);
+      if(!(t.stages||[]).includes(sid)){
+        if(!t.stages) t.stages = [];
+        t.stages.push(sid);
+        if(!t.stageEnteredAt) t.stageEnteredAt = {};
+        const mn = new Date(); mn.setHours(0,0,0,0);
+        t.stageEnteredAt[sid] = mn.getTime();
+        t.updatedAt = Date.now();
+        save(); render(); schedulePush();
+        toast('Added: '+sg(sid).label+' ✓');
+      }
+      closeStagePicker();
+    });
+  });
+  setTimeout(function(){ document.addEventListener('click', _stagePickerOutside); }, 10);
+}
+
 // ── RENDER BOARD ──────────────────────────────────────
 function render(){
   const _fuCache = getFU();  // parse localStorage once per render, not per chip
@@ -1975,7 +2061,40 @@ function render(){
           + (t.isAF ? ' <span style="font-size:10px" title="AF File">🔷</span>' : '')
           + (w ? ' <span style="font-size:10px">\u26A0</span>' : '')
           + assigneeBadge;
-        chip.addEventListener('click', function(){ openDetail(t.id); });
+        // Single click → open detail (with delay to allow double-click detection)
+        // Double click → open stage picker
+        var _chipClickTimer = null;
+        chip.addEventListener('click', function(e){
+          if(_chipClickTimer){
+            // Second click within 250ms = double-click
+            clearTimeout(_chipClickTimer);
+            _chipClickTimer = null;
+            openStagePicker(t.id, chip);
+          } else {
+            _chipClickTimer = setTimeout(function(){
+              _chipClickTimer = null;
+              openDetail(t.id);
+            }, 250);
+          }
+        });
+        // Also wire dblclick directly for reliability on desktop
+        chip.addEventListener('dblclick', function(e){
+          e.stopPropagation();
+          if(_chipClickTimer){ clearTimeout(_chipClickTimer); _chipClickTimer = null; }
+          openStagePicker(t.id, chip);
+        });
+
+        // Mobile: detect double-tap separately (touchend)
+        var _lastTap = 0;
+        chip.addEventListener('touchend', function(e){
+          const now = Date.now();
+          if(now - _lastTap < 300){
+            e.preventDefault(); // prevent zoom
+            if(_chipClickTimer){ clearTimeout(_chipClickTimer); _chipClickTimer = null; }
+            openStagePicker(t.id, chip);
+          }
+          _lastTap = now;
+        }, {passive: false});
 
         const fu = document.createElement('span');
         fu.className = 'tchip-fu' + fuCls;
@@ -2144,6 +2263,75 @@ function openDetail(id){
     '</div>'+
     actHtml+
     buildAssignSection(t)+
+    // Stage History Timeline
+    (function(){
+      const sea = t.stageEnteredAt || {};
+      // Collect all stages ever on this tender — active + past (from assign history keys)
+      const allSids = Array.from(new Set(
+        (t.stages||[]).concat(
+          Object.keys(t.stageAssignHistory||{}).map(Number)
+        )
+      ));
+      if(!allSids.length) return '';
+
+      // Sort by entry time — stages with no entry time go last
+      allSids.sort(function(a,b){
+        const ta = sea[a] || 0, tb = sea[b] || 0;
+        return ta - tb;
+      });
+
+      const today = new Date(); today.setHours(0,0,0,0);
+
+      const items = allSids.map(function(sid){
+        const s = sg(sid);
+        const isActive = (t.stages||[]).includes(sid);
+        const enteredTs = sea[sid] || null;
+        const enteredDate = enteredTs ? new Date(enteredTs) : null;
+        if(enteredDate) enteredDate.setHours(0,0,0,0);
+        const daysIn = enteredDate ? Math.round((today - enteredDate) / 86400000) : null;
+        return {s:s, sid:sid, isActive:isActive, enteredDate:enteredDate, daysIn:daysIn};
+      });
+
+      let html = '<div class="detail-sec">Stage History</div>'+
+        '<div style="position:relative;padding-left:20px;margin-bottom:8px;">';
+
+      // Vertical line
+      html += '<div style="position:absolute;left:6px;top:8px;bottom:8px;width:2px;background:var(--border);border-radius:1px;"></div>';
+
+      items.forEach(function(item, i){
+        const isLast = i === items.length - 1;
+        const dotCol = item.isActive ? item.s.color : 'var(--border2)';
+        const textCol = item.isActive ? 'var(--text)' : 'var(--dim)';
+        const dateStr = item.enteredDate
+          ? item.enteredDate.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})
+          : '—';
+        const daysStr = item.daysIn !== null
+          ? (item.isActive ? item.daysIn+'d in stage' : 'left stage')
+          : '';
+
+        html += '<div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:'+(isLast?'0':'12px')+';">'+
+          // Dot
+          '<div style="position:relative;left:-14px;margin-right:-14px;margin-top:3px;'+
+            'width:12px;height:12px;border-radius:50%;background:'+dotCol+';flex-shrink:0;'+
+            (item.isActive ? 'box-shadow:0 0 0 3px '+item.s.color+'22;' : '')+
+            'z-index:1;border:2px solid var(--bg);"></div>'+
+          // Content
+          '<div style="flex:1;min-width:0;">'+
+            '<div style="font-size:12px;font-weight:700;color:'+textCol+';font-family:var(--sans);">'+
+              esc(item.s.label)+
+              (item.isActive ? ' <span style="font-size:9px;font-weight:700;font-family:var(--mono);'+
+                'background:'+item.s.color+'22;color:'+item.s.color+';border-radius:4px;padding:1px 5px;">ACTIVE</span>' : '')+
+            '</div>'+
+            '<div style="font-size:10px;color:var(--dim);font-family:var(--mono);margin-top:2px;">'+
+              dateStr + (daysStr ? ' · '+daysStr : '')+
+            '</div>'+
+          '</div>'+
+        '</div>';
+      });
+
+      html += '</div>';
+      return html;
+    })()+
     datesHtml+
     (t.emd?'<div class="detail-sec">EMD</div><div style="font-family:var(--mono);font-size:15px;font-weight:700;color:var(--accent);padding:4px 0">₹'+Math.round(Number(t.emd)).toLocaleString('en-IN')+'</div>':'')+
     (t.notes?'<div class="detail-sec">Notes</div><div class="detail-notes">'+esc(t.notes)+'</div>':'');
@@ -3542,6 +3730,22 @@ if(_initCfg.token){
   }
 }
 initProfile();
+
+// ── MIDNIGHT REFRESH ──────────────────────────────────
+// Re-renders at midnight so Today tab always shows correct date
+// Prevents stale "today" when app is left open overnight
+(function scheduleMidnightRefresh(){
+  const now = new Date();
+  const msUntilMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate()+1, 0, 0, 10).getTime() - now.getTime();
+  setTimeout(function(){
+    render();
+    refreshBadge();
+    if(document.getElementById('modal-actions').classList.contains('open')){
+      buildActionsModal();
+    }
+    scheduleMidnightRefresh(); // reschedule for next midnight
+  }, msUntilMidnight);
+})();
 </script>
 </body>
 </html>
