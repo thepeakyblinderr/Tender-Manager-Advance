@@ -1094,9 +1094,14 @@ function getActions(t){
       dateActions(rd, '🔄', 'Reverse Auction', fmt(t.ra)||'');
   }
 
-  // TCQ End Date
+  // TCQ End Date — only show expired if still in TCQ stage
   const qd = daysLeft(t.tcq);
-  dateActions(qd, '📋', 'TCQ End Date', fmt(t.tcq)||'');
+  if(qd !== null){
+    if(qd < 0 && (stages.includes(8) || stages.includes(9)))
+      push('followup', '➡️', 'TCQ End Date has passed', 'Update stage if TCQ process is complete');
+    else if(qd >= 0)
+      dateActions(qd, '📋', 'TCQ End Date', fmt(t.tcq)||'');
+  }
 
   // Pre-Bid / Clarification Date
   const pbd = daysLeft(t.preBid);
@@ -2914,12 +2919,40 @@ async function syncPush(silent){
 
 // ── Pull ──────────────────────────────────────────────
 async function syncForcePull(){
-  // Clear all local state that could block a clean pull
+  // Wipe ALL local state that could block tenders
   localStorage.removeItem('tt_deleted');
+  localStorage.removeItem('tt_people_deleted');
   tenders = [];
   save();
   render();
-  await syncPull(false);
+  // Pull ignoring remote deleted list too
+  const cfg = getSyncCfg();
+  if(!cfg.token){ toast('No token set',true); return; }
+  if(!cfg.gistId){ toast('No Gist ID',true); return; }
+  setSyncDot('busy');
+  try{
+    const res  = await gistReq('GET','/gists/'+cfg.gistId);
+    const file = res.files && res.files[SYNC_FILE];
+    if(!file){ toast('No data file in Gist',true); setSyncDot('err'); return; }
+    let raw = file.content;
+    if(file.truncated){ const r2=await fetch(file.raw_url); raw=await r2.text(); }
+    const p = JSON.parse(raw);
+    let arr = [], peopleArr = null;
+    if(Array.isArray(p)){ arr=p; }
+    else if(p&&Array.isArray(p.tenders)){ arr=p.tenders; peopleArr=p.people||null; }
+    // Load ALL tenders — ignore deleted list completely
+    tenders = arr.map(expandSlim);
+    save();
+    if(peopleArr&&peopleArr.length>0) savePeople(peopleArr);
+    render();
+    localStorage.setItem('tt_last_sync', Date.now().toString());
+    setSyncDot('ok');
+    toast('Force pulled ' + tenders.length + ' tenders ✓');
+  }catch(e){
+    setSyncDot('err');
+    toast('Force pull failed: '+e.message, true);
+    console.warn(e);
+  }
 }
 
 async function syncPull(silent){
@@ -2942,9 +2975,12 @@ async function syncPull(silent){
       else if(p&&Array.isArray(p.tenders)){ arr=p.tenders; peopleArr=p.people||null; remoteDeleted=p.deleted||{}; }
     }catch(e){ throw new Error('Invalid data in Gist'); }
 
-    // Use REMOTE deleted list as truth — don't let local deleted block valid tenders
-    localStorage.setItem('tt_deleted', JSON.stringify(remoteDeleted));
-    const filtered = arr.filter(function(t){ return !remoteDeleted[t.id]; });
+    // Use REMOTE deleted list as truth — but only if it seems sane
+    // If remote deleted has MORE entries than tenders, it's likely corrupt — ignore it
+    const deletedCount = Object.keys(remoteDeleted).length;
+    const safeDeleted = deletedCount < arr.length ? remoteDeleted : {};
+    localStorage.setItem('tt_deleted', JSON.stringify(safeDeleted));
+    const filtered = arr.filter(function(t){ return !safeDeleted[t.id]; });
 
     tenders = filtered.map(expandSlim);
     save();
@@ -2963,125 +2999,157 @@ async function syncPull(silent){
 
 // ── Export / Import ───────────────────────────────────
 function exportLeadTime(){
-  // Build lead time data using SheetJS (CDN loaded dynamically)
   function doExport(){
     const today = new Date(); today.setHours(0,0,0,0);
+    const wb = XLSX.utils.book_new();
+    const people = getPeople();
 
-    // Header row
-    const baseHeaders = [
-      'Tender No','Priority','AF File','Owner',
-      'File Received','Total Age (days)',
-      'Current Stage(s)',
+    // ── Helper: format date YYYY-MM-DD → DD Mon YYYY ──
+    function fmtD(d){
+      if(!d) return '';
+      const p = d.split('-');
+      if(p.length!==3) return d;
+      const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      return p[2]+' '+months[+p[1]-1]+' '+p[0];
+    }
+    function daysFromTs(ts){
+      if(!ts) return null;
+      const d = new Date(ts); d.setHours(0,0,0,0);
+      return Math.round((today - d) / 86400000);
+    }
+    function ownerName(t){
+      const p = t.owner ? people.find(function(x){return x.id===t.owner;}) : null;
+      return p ? p.name : '';
+    }
+
+    // ── SHEET 1: LEAD TIME MATRIX (Stages as rows, Tenders as columns) ──
+    // Row 1: Tender numbers
+    // Row 2: Owner
+    // Row 3: Priority
+    // Row 4: File Received
+    // Row 5: Total File Age
+    // Row 6: blank separator
+    // Rows 7+: One row per stage → "DD Mon YYYY (Xd)" or blank
+
+    const tenderList = tenders.slice(); // all tenders
+
+    // Build matrix data
+    const headerRow1 = ['STAGE'].concat(tenderList.map(function(t){ return t.no; }));
+    const headerRow2 = ['Owner'].concat(tenderList.map(function(t){ return ownerName(t); }));
+    const headerRow3 = ['Priority'].concat(tenderList.map(function(t){ return t.priority==='high'?'HIGH':''; }));
+    const headerRow4 = ['File Received'].concat(tenderList.map(function(t){ return fmtD(t.fileReceived); }));
+    const headerRow5 = ['Total File Age (days)'].concat(tenderList.map(function(t){
+      if(!t.fileReceived) return '';
+      const rcvd = new Date(t.fileReceived); rcvd.setHours(0,0,0,0);
+      return Math.round((today - rcvd)/86400000);
+    }));
+    const blankRow = ['──────────────────────────────'].concat(tenderList.map(function(){ return ''; }));
+
+    const matrix = [headerRow1, headerRow2, headerRow3, headerRow4, headerRow5, blankRow];
+
+    // One row per stage
+    STAGES.forEach(function(s){
+      const row = [s.label];
+      tenderList.forEach(function(t){
+        const sea = t.stageEnteredAt || {};
+        const inStage = (t.stages||[]).includes(s.id);
+        if(!inStage || !sea[s.id]){
+          row.push('');
+        } else {
+          const days = daysFromTs(sea[s.id]);
+          const entered = new Date(sea[s.id]);
+          const dateStr = entered.getDate()+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][entered.getMonth()];
+          row.push(dateStr + ' (' + days + 'd)');
+        }
+      });
+      matrix.push(row);
+    });
+
+    // Total tracked days row
+    const totalRow = ['TOTAL TRACKED DAYS'];
+    tenderList.forEach(function(t){
+      const sea = t.stageEnteredAt || {};
+      let total = 0;
+      (t.stages||[]).forEach(function(sid){
+        if(sea[sid]){ total += daysFromTs(sea[sid]); }
+      });
+      totalRow.push(total || '');
+    });
+    matrix.push(['']);
+    matrix.push(totalRow);
+
+    const ws1 = XLSX.utils.aoa_to_sheet(matrix);
+
+    // Column widths: first col wide, rest narrow
+    ws1['!cols'] = [{wch:40}].concat(tenderList.map(function(){ return {wch:18}; }));
+    // Freeze first column and first row
+    ws1['!freeze'] = {xSplit:1, ySplit:1};
+
+    XLSX.utils.book_append_sheet(wb, ws1, 'Lead Time Matrix');
+
+    // ── SHEET 2: TENDER DETAILS ──
+    const detailHeaders = [
+      'Tender No','Owner','Priority','AF File',
+      'File Received','Total Age (days)','Current Stage(s)',
       'Pre-Bid Date','Negotiation Date','Sale End',
       'Tech Bid Opening','Price Bid Opening',
-      'Reverse Auction','Bid Validity','TCQ End',
-      'EMD Amount'
+      'Reverse Auction','Bid Validity','TCQ End','EMD (₹)'
     ];
-
-    // Stage headers — one per stage (days in stage)
-    const stageHeaders = STAGES.map(function(s){ return 'Stage: '+s.label+' (days)'; });
-    const headers = baseHeaders.concat(stageHeaders).concat(['Total Tracked Days (sum of stages)']);
-
-    const rows = tenders.map(function(t){
-      const ownerP = t.owner ? personById(t.owner) : null;
-
-      // Total file age
-      let totalAge = '';
-      if(t.fileReceived){
-        const rcvd = new Date(t.fileReceived); rcvd.setHours(0,0,0,0);
-        totalAge = Math.round((today - rcvd) / 86400000);
-      }
-
-      // Current stages
-      const currentStages = (t.stages||[]).map(function(sid){ return sg(sid).label; }).join(' | ');
-
-      const base = [
-        t.no,
-        t.priority === 'high' ? 'High' : 'Normal',
-        t.isAF ? 'Yes' : 'No',
-        ownerP ? ownerP.name : '',
-        t.fileReceived || '',
-        totalAge,
-        currentStages,
-        t.preBid    || '',
-        t.negoDate  || '',
-        t.saleEnd   || '',
-        t.techBid   || '',
-        t.priceBid  || '',
-        t.ra        || '',
-        t.validity  || '',
-        t.tcq       || '',
+    const detailRows = tenderList.map(function(t){
+      const totalAge = t.fileReceived
+        ? Math.round((today - (function(){ const d=new Date(t.fileReceived);d.setHours(0,0,0,0);return d;})()) / 86400000)
+        : '';
+      return [
+        t.no, ownerName(t),
+        t.priority==='high'?'High':'Normal',
+        t.isAF?'Yes':'No',
+        fmtD(t.fileReceived), totalAge,
+        (t.stages||[]).map(function(sid){ return sg(sid).label; }).join(' | '),
+        fmtD(t.preBid), fmtD(t.negoDate), fmtD(t.saleEnd),
+        fmtD(t.techBid), fmtD(t.priceBid),
+        fmtD(t.ra), fmtD(t.validity), fmtD(t.tcq),
         t.emd ? Number(t.emd) : ''
       ];
-
-      // Days spent in each stage
-      // For current stages: days since entered
-      // For past stages: not tracked (stageEnteredAt only stores current entry)
-      // We show days in stage for ALL stages the tender is currently in
-      const stageDays = STAGES.map(function(s){
-        if(!(t.stages||[]).includes(s.id)) return '';
-        if(!t.stageEnteredAt || !t.stageEnteredAt[s.id]) return '';
-        const entered = new Date(t.stageEnteredAt[s.id]); entered.setHours(0,0,0,0);
-        return Math.round((today - entered) / 86400000);
-      });
-
-      // Total tracked days = sum of all non-empty stage days
-      const totalTracked = stageDays.reduce(function(sum, d){ return sum + (typeof d === 'number' ? d : 0); }, 0);
-
-      return base.concat(stageDays).concat([totalTracked || '']);
     });
+    const ws2 = XLSX.utils.aoa_to_sheet([detailHeaders].concat(detailRows));
+    ws2['!cols'] = [
+      {wch:20},{wch:14},{wch:10},{wch:8},
+      {wch:16},{wch:16},{wch:40},
+      {wch:14},{wch:16},{wch:14},
+      {wch:16},{wch:16},{wch:14},{wch:14},{wch:12},{wch:14}
+    ];
+    ws2['!freeze'] = {xSplit:0, ySplit:1};
+    XLSX.utils.book_append_sheet(wb, ws2, 'Tender Details');
 
-    // Build workbook
-    const wb = XLSX.utils.book_new();
-
-    // Sheet 1: Lead Time Analysis
-    const wsData = [headers].concat(rows);
-    const ws = XLSX.utils.aoa_to_sheet(wsData);
-
-    // Column widths
-    ws['!cols'] = headers.map(function(h, i){
-      if(i === 0) return {wch:20}; // Tender No
-      if(i === 6) return {wch:30}; // Current stages
-      if(h.startsWith('Stage:')) return {wch:14};
-      return {wch:16};
-    });
-
-    // Freeze first row
-    ws['!freeze'] = {xSplit:0, ySplit:1};
-
-    XLSX.utils.book_append_sheet(wb, ws, 'Lead Time Analysis');
-
-    // Sheet 2: Stage Summary — average days per stage across all tenders
-    const stageSummaryData = [['Stage', 'Tenders Currently In Stage', 'Avg Days in Stage', 'Max Days', 'Min Days']];
-    let totalAvgSum = 0, totalStagesWithData = 0;
+    // ── SHEET 3: STAGE SUMMARY ──
+    const summaryHeaders = ['Stage','Active Tenders','Avg Days in Stage','Max Days','Min Days'];
+    const summaryRows = [];
+    let totalAvg = 0, stagesWithData = 0;
     STAGES.forEach(function(s){
       const inStage = tenders.filter(function(t){
         return (t.stages||[]).includes(s.id) && t.stageEnteredAt && t.stageEnteredAt[s.id];
       });
-      if(!inStage.length){ stageSummaryData.push([s.label,0,'','','']); return; }
-      const daysList = inStage.map(function(t){
-        const entered = new Date(t.stageEnteredAt[s.id]); entered.setHours(0,0,0,0);
-        return Math.round((today - entered) / 86400000);
+      if(!inStage.length){ summaryRows.push([s.label,0,'','','']); return; }
+      const days = inStage.map(function(t){
+        return daysFromTs(t.stageEnteredAt[s.id]);
       });
-      const avg = Math.round(daysList.reduce(function(a,b){return a+b;},0) / daysList.length);
-      totalAvgSum += avg; totalStagesWithData++;
-      stageSummaryData.push([s.label, inStage.length, avg, Math.max.apply(null,daysList), Math.min.apply(null,daysList)]);
+      const avg = Math.round(days.reduce(function(a,b){return a+b;},0)/days.length);
+      totalAvg += avg; stagesWithData++;
+      summaryRows.push([s.label, inStage.length, avg, Math.max.apply(null,days), Math.min.apply(null,days)]);
     });
-    // Add summary row
-    stageSummaryData.push(['']);
-    stageSummaryData.push(['TOTAL / AVERAGE', '', totalStagesWithData ? Math.round(totalAvgSum/totalStagesWithData) : '', '', '']);
-    const ws2 = XLSX.utils.aoa_to_sheet(stageSummaryData);
-    ws2['!cols'] = [{wch:45},{wch:28},{wch:20},{wch:12},{wch:12}];
-    ws2['!freeze'] = {xSplit:0, ySplit:1};
-    XLSX.utils.book_append_sheet(wb, ws2, 'Stage Summary');
+    summaryRows.push(['']);
+    summaryRows.push(['OVERALL AVERAGE','',stagesWithData?Math.round(totalAvg/stagesWithData):'','','']);
+    const ws3 = XLSX.utils.aoa_to_sheet([summaryHeaders].concat(summaryRows));
+    ws3['!cols'] = [{wch:45},{wch:18},{wch:20},{wch:12},{wch:12}];
+    ws3['!freeze'] = {xSplit:0, ySplit:1};
+    XLSX.utils.book_append_sheet(wb, ws3, 'Stage Summary');
 
     // Download
-    const date = new Date().toISOString().slice(0,10);
-    XLSX.writeFile(wb, 'TenderTrack-LeadTime-'+date+'.xlsx');
+    const dateStr = new Date().toISOString().slice(0,10);
+    XLSX.writeFile(wb, 'TenderTrack-LeadTime-'+dateStr+'.xlsx');
     toast('Excel exported ✓');
   }
 
-  // Load SheetJS dynamically if not already loaded
   if(typeof XLSX !== 'undefined'){
     doExport();
   } else {
@@ -3114,7 +3182,14 @@ function importData(){
         const arr=Array.isArray(p)?p:(p&&Array.isArray(p.tenders)?p.tenders:null);
         if(!arr) throw new Error('Not a valid export file');
         if(tenders.length>0&&!confirm('Replace all '+tenders.length+' tenders with imported data?')) return;
-        tenders=arr.map(expandSlim); save(); render();
+        tenders=arr.map(expandSlim); save();
+        // Restore people if included in export
+        if(p&&Array.isArray(p.people)&&p.people.length>0){
+          savePeople(p.people);
+        }
+        // Restore deleted list if included
+        if(p&&p.deleted){ localStorage.setItem('tt_deleted',JSON.stringify(p.deleted)); }
+        render();
         toast('Imported '+tenders.length+' tenders ✓');
       }catch(err){ toast('Import failed: '+err.message,true); }
     };
