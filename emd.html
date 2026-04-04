@@ -119,10 +119,10 @@ main{padding:16px;padding-bottom:calc(30px + var(--safe-bot));}
 .emd-amount{font-family:var(--mono);font-size:13px;font-weight:700;color:#34d399;white-space:nowrap;}
 [data-theme="light"] .emd-amount{color:#047857;}
 .emd-status{font-size:10px;font-weight:700;font-family:var(--mono);border-radius:20px;padding:3px 10px;white-space:nowrap;}
-.emd-status.submitted{background:rgba(59,158,255,.15);color:#70bbff;border:1px solid rgba(59,158,255,.3);}
-[data-theme="light"] .emd-status.submitted{background:rgba(26,125,255,.1);color:#1255a0;border-color:rgba(26,125,255,.3);}
-.emd-status.refund-pending{background:rgba(251,191,36,.15);color:#fbbf24;border:1px solid rgba(251,191,36,.3);}
-[data-theme="light"] .emd-status.refund-pending{background:rgba(180,83,9,.1);color:#92400e;border-color:rgba(180,83,9,.3);}
+.emd-status.refund-pending{background:rgba(59,158,255,.15);color:#70bbff;border:1px solid rgba(59,158,255,.3);}
+[data-theme="light"] .emd-status.refund-pending{background:rgba(26,125,255,.1);color:#1255a0;border-color:rgba(26,125,255,.3);}
+.emd-status.refund-requested{background:rgba(251,191,36,.15);color:#fbbf24;border:1px solid rgba(251,191,36,.3);}
+[data-theme="light"] .emd-status.refund-requested{background:rgba(180,83,9,.1);color:#92400e;border-color:rgba(180,83,9,.3);}
 .emd-status.refunded{background:rgba(52,211,153,.12);color:#34d399;border:1px solid rgba(52,211,153,.25);}
 [data-theme="light"] .emd-status.refunded{background:rgba(4,120,87,.1);color:#047857;border-color:rgba(4,120,87,.3);}
 .emd-chevron{color:var(--dim);font-size:16px;flex-shrink:0;transition:transform .2s;}
@@ -188,10 +188,10 @@ main{padding:16px;padding-bottom:calc(30px + var(--safe-bot));}
 .sopt{flex:1;min-width:90px;border:1px solid var(--border2);border-radius:10px;padding:10px 8px;
   text-align:center;cursor:pointer;font-family:var(--mono);font-size:11px;font-weight:700;
   color:var(--dim);background:var(--surface);transition:all .15s;}
-.sopt.active-submitted{background:rgba(59,158,255,.15);border-color:rgba(59,158,255,.5);color:#70bbff;}
-[data-theme="light"] .sopt.active-submitted{background:rgba(26,125,255,.1);border-color:rgba(26,125,255,.4);color:#1255a0;}
-.sopt.active-refund-pending{background:rgba(251,191,36,.15);border-color:rgba(251,191,36,.5);color:#fbbf24;}
-[data-theme="light"] .sopt.active-refund-pending{background:rgba(180,83,9,.1);border-color:rgba(180,83,9,.4);color:#92400e;}
+.sopt.active-refund-pending{background:rgba(59,158,255,.15);border-color:rgba(59,158,255,.5);color:#70bbff;}
+[data-theme="light"] .sopt.active-refund-pending{background:rgba(26,125,255,.1);border-color:rgba(26,125,255,.4);color:#1255a0;}
+.sopt.active-refund-requested{background:rgba(251,191,36,.15);border-color:rgba(251,191,36,.5);color:#fbbf24;}
+[data-theme="light"] .sopt.active-refund-requested{background:rgba(180,83,9,.1);border-color:rgba(180,83,9,.4);color:#92400e;}
 .sopt.active-refunded{background:rgba(52,211,153,.15);border-color:rgba(52,211,153,.5);color:#34d399;}
 [data-theme="light"] .sopt.active-refunded{background:rgba(4,120,87,.1);border-color:rgba(4,120,87,.4);color:#047857;}
 
@@ -210,6 +210,14 @@ main{padding:16px;padding-bottom:calc(30px + var(--safe-bot));}
   border:1px solid rgba(52,211,153,.3);display:flex;align-items:center;justify-content:center;
   font-size:10px;font-weight:700;color:#34d399;flex-shrink:0;margin-top:1px;}
 .sync-step-body{flex:1;font-size:12px;color:var(--dim);line-height:1.5;}
+
+/* EXCEL EXPORT BUTTON */
+.btn-excel{display:flex;align-items:center;gap:5px;border-radius:9px;padding:7px 11px;
+  font-family:var(--sans);font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0;-webkit-appearance:none;transition:all .15s;}
+[data-theme="dark"] .btn-excel{background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.4);color:#4ade80;}
+[data-theme="dark"] .btn-excel:hover{background:rgba(34,197,94,.25);border-color:rgba(34,197,94,.6);}
+[data-theme="light"] .btn-excel{background:rgba(4,120,87,.12);border:1px solid rgba(4,120,87,.4);color:#047857;}
+[data-theme="light"] .btn-excel:hover{background:rgba(4,120,87,.2);border-color:rgba(4,120,87,.6);}
 
 /* TOAST */
 .toast{position:fixed;bottom:calc(24px + var(--safe-bot));left:50%;transform:translateX(-50%) translateY(20px);
@@ -231,11 +239,11 @@ main{padding:16px;padding-bottom:calc(30px + var(--safe-bot));}
     <button class="btn-add" onclick="openAddTender()">+ Add</button>
   </div>
   <div class="hdr-row2">
-    <input class="hdr-search" id="search" placeholder="Search tender, vendor, amount…" oninput="render()">
+    <input class="hdr-search" id="search" placeholder="Search tender, vendor, handled by, amount…" oninput="render()">
     <button class="btn-sync" id="btn-sync" onclick="openSync()">
       <span class="sync-dot" id="sync-dot"></span>Sync
     </button>
-    <button class="btn-sync" onclick="exportExcel()" title="Export to Excel" style="background:rgba(34,197,94,.12);border-color:rgba(34,197,94,.35);color:#4ade80;">⬇ Excel</button>
+    <button class="btn-excel" onclick="exportExcel()" title="Export to Excel">⬇ Excel</button>
   </div>
 </header>
 
@@ -244,14 +252,15 @@ main{padding:16px;padding-bottom:calc(30px + var(--safe-bot));}
     <div class="stat-chip blue"><b id="s-total">0</b>&nbsp;Tenders</div>
     <div class="stat-chip green"><b id="s-amount">₹0</b>&nbsp;Total EMD</div>
     <div class="stat-chip amber"><b id="s-pending">0</b>&nbsp;Refund Pending</div>
-    <div class="stat-chip blue"><b id="s-submitted">0</b>&nbsp;Submitted</div>
+    <div class="stat-chip blue"><b id="s-refund-pending">0</b>&nbsp;Refund Pending</div>
+    <div class="stat-chip yellow"><b id="s-refund-requested">0</b>&nbsp;Refund Requested</div>
     <div class="stat-chip green"><b id="s-refunded">0</b>&nbsp;Refunded</div>
   </div>
 
   <div class="filter-tabs" id="filter-tabs">
     <div class="ftab active" data-filter="all" onclick="setFilter('all')">All</div>
-    <div class="ftab" data-filter="submitted" onclick="setFilter('submitted')">Submitted</div>
     <div class="ftab" data-filter="refund-pending" onclick="setFilter('refund-pending')">Refund Pending</div>
+    <div class="ftab" data-filter="refund-requested" onclick="setFilter('refund-requested')">Refund Requested</div>
     <div class="ftab" data-filter="refunded" onclick="setFilter('refunded')">Refunded</div>
   </div>
 
@@ -261,7 +270,6 @@ main{padding:16px;padding-bottom:calc(30px + var(--safe-bot));}
 <!-- ADD/EDIT TENDER MODAL -->
 <div class="overlay" id="modal-tender">
   <div class="modal">
-    <div class="modal-drag"></div>
     <div class="mhead">
       <span class="mt" id="tender-modal-title">Add Tender</span>
       <button class="xbtn" onclick="closeM('modal-tender')">✕</button>
@@ -269,6 +277,10 @@ main{padding:16px;padding-bottom:calc(30px + var(--safe-bot));}
     <div class="fgrp">
       <label class="fl">Tender Number</label>
       <input class="fi" id="f-no" placeholder="e.g. A75 / 19537" autocomplete="off">
+    </div>
+    <div class="fgrp">
+      <label class="fl">Handled By</label>
+      <input class="fi" id="f-handled-by-tender" placeholder="e.g. Sandesh, Midhun…" autocomplete="off">
     </div>
     <div class="mfoot">
       <button class="btn-c" onclick="closeM('modal-tender')">Cancel</button>
@@ -280,7 +292,6 @@ main{padding:16px;padding-bottom:calc(30px + var(--safe-bot));}
 <!-- ADD/EDIT EMD ENTRY MODAL -->
 <div class="overlay" id="modal-entry">
   <div class="modal">
-    <div class="modal-drag"></div>
     <div class="mhead">
       <span class="mt" id="entry-modal-title">Add EMD Entry</span>
       <button class="xbtn" onclick="closeM('modal-entry')">✕</button>
@@ -298,10 +309,14 @@ main{padding:16px;padding-bottom:calc(30px + var(--safe-bot));}
       <input class="fi" id="f-date" type="date">
     </div>
     <div class="fgrp">
+      <label class="fl">Refund Requested On</label>
+      <input class="fi" id="f-refund-requested-on" type="date">
+    </div>
+    <div class="fgrp">
       <label class="fl">Status</label>
       <div class="status-opts" id="status-opts">
-        <div class="sopt" data-val="submitted" onclick="selectStatus('submitted')">Submitted</div>
         <div class="sopt" data-val="refund-pending" onclick="selectStatus('refund-pending')">Refund Pending</div>
+        <div class="sopt" data-val="refund-requested" onclick="selectStatus('refund-requested')">Refund Requested</div>
         <div class="sopt" data-val="refunded" onclick="selectStatus('refunded')">Refunded</div>
       </div>
     </div>
@@ -320,7 +335,6 @@ main{padding:16px;padding-bottom:calc(30px + var(--safe-bot));}
 <!-- SYNC MODAL -->
 <div class="overlay" id="modal-sync">
   <div class="modal">
-    <div class="modal-drag"></div>
     <div class="mhead">
       <span class="mt">☁ Cloud Sync</span>
       <button class="xbtn" onclick="closeM('modal-sync')">✕</button>
@@ -641,9 +655,11 @@ function fmtDate(d){
   return dt.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
 }
 function statusLabel(s){
-  if(s==='submitted') return 'Submitted';
-  if(s==='refund-pending') return 'Refund Pending';
-  if(s==='refunded') return 'Refunded';
+  if(s==='refund-pending')   return 'Refund Pending';
+  if(s==='refund-requested') return 'Refund Requested';
+  if(s==='refunded')         return 'Refunded';
+  // Legacy migration: old 'submitted' → 'Refund Pending'
+  if(s==='submitted') return 'Refund Pending';
   return s;
 }
 // Get latest entry for a tender (for summary display)
@@ -680,12 +696,13 @@ function render(){
   let filtered = tenders.filter(t => {
     if(q){
       const matchNo = t.no.toLowerCase().includes(q);
+      const matchHandledBy = (t.handledBy||'').toLowerCase().includes(q);
       const matchEntry = (t.entries||[]).some(e =>
         (e.vendor||'').toLowerCase().includes(q) ||
         (e.notes||'').toLowerCase().includes(q) ||
         (e.amount||'').toString().includes(q)
       );
-      if(!matchNo && !matchEntry) return false;
+      if(!matchNo && !matchHandledBy && !matchEntry) return false;
     }
     if(activeFilter === 'all') return true;
     // Check if any entry matches the filter status
@@ -697,15 +714,15 @@ function render(){
   tenders.forEach(t => {
     totalActive += activeAmount(t);
     if(t.entries) t.entries.forEach(e => {
-      if(e.status==='refund-pending') pendingCount++;
-      if(e.status==='submitted') submittedCount++;
+      if(e.status==='refund-pending' || e.status==='submitted') pendingCount++; // submitted = legacy refund-pending
+      if(e.status==='refund-requested') submittedCount++; // reuse submittedCount for refund-requested
       if(e.status==='refunded') refundedCount++;
     });
   });
   document.getElementById('s-total').textContent = tenders.length;
   document.getElementById('s-amount').textContent = fmtAmount(totalActive);
-  document.getElementById('s-pending').textContent = pendingCount;
-  document.getElementById('s-submitted').textContent = submittedCount;
+  document.getElementById('s-refund-pending').textContent = pendingCount;
+  const rrEl = document.getElementById('s-refund-requested'); if(rrEl) rrEl.textContent = submittedCount;
   document.getElementById('s-refunded').textContent = refundedCount;
 
   if(!filtered.length){
@@ -722,10 +739,17 @@ function render(){
       <div class="emd-card-header" onclick="toggleCard('${t.id}')">
         <div style="flex:1;min-width:0;">
           <div class="emd-no">${esc(t.no)}</div>
-          ${le ? `<div class="emd-vendor">${esc(le.vendor||'—')}</div>` : '<div class="emd-vendor" style="color:var(--dim);font-style:italic">No entries yet</div>'}
+          ${t.handledBy ? `<div style="font-size:10px;font-family:var(--mono);color:var(--accent);font-weight:600;margin-top:1px;">👤 ${esc(t.handledBy)}</div>` : ''}
+            ${(t.entries&&t.entries.length)
+            ? (() => {
+                const vendors = [...new Set((t.entries).map(e=>e.vendor||'').filter(Boolean))];
+                return `<div class="emd-vendor">${vendors.length ? vendors.map(v=>esc(v)).join(' · ') : '—'}</div>
+                <div style="font-size:10px;font-family:var(--mono);color:var(--dim);margin-top:1px;">${t.entries.length} bidder${t.entries.length>1?'s':''}</div>`;
+              })()
+            : '<div class="emd-vendor" style="color:var(--dim);font-style:italic">No entries yet</div>'}
         </div>
         ${le ? `<div class="emd-amount">${fmtAmount(activeAmount(t))}</div>` : ''}
-        ${le ? `<div class="emd-status ${le.status}">${statusLabel(le.status)}</div>` : ''}
+        ${le ? `<div class="emd-status ${le.status==='submitted'?'refund-pending':le.status}" style="display:none"></div>` : ''}
         <div class="emd-chevron">▾</div>
       </div>
       ${expanded ? `
@@ -739,10 +763,11 @@ function render(){
           <div class="emd-entry" onclick="openEditEntry('${t.id}','${e.id}')">
             <div class="emd-entry-row">
               <div class="emd-entry-amount">${fmtAmount(e.amount)}</div>
-              <div class="emd-status ${e.status}" style="font-size:9px;padding:2px 8px;">${statusLabel(e.status)}</div>
+              <div class="emd-status ${e.status==='submitted'?'refund-pending':e.status}" style="font-size:9px;padding:2px 8px;">${statusLabel(e.status)}</div>
               <div class="emd-entry-date">${fmtDate(e.date)}</div>
             </div>
             ${e.vendor ? `<div style="font-size:11px;font-family:var(--mono);color:var(--dim);">${esc(e.vendor)}</div>` : ''}
+            ${e.refundRequestedOn ? `<div style="font-size:11px;font-family:var(--mono);color:var(--dim);">Refund requested: ${fmtDate(e.refundRequestedOn)}</div>` : ''}
             ${e.notes ? `<div class="emd-entry-notes">${esc(e.notes)}</div>` : ''}
           </div>`).join('')}
         ${entriesFiltered.length===0 ? '<div style="font-size:12px;color:var(--dim);padding:8px 0;">No entries match this filter</div>' : ''}
@@ -763,6 +788,7 @@ function openAddTender(){
   editingTenderId = null;
   document.getElementById('tender-modal-title').textContent = 'Add Tender';
   document.getElementById('f-no').value = '';
+  document.getElementById('f-handled-by-tender').value = '';
   openM('modal-tender');
   setTimeout(()=>document.getElementById('f-no').focus(),300);
 }
@@ -772,19 +798,22 @@ function openEditTender(id){
   editingTenderId = id;
   document.getElementById('tender-modal-title').textContent = 'Edit Tender';
   document.getElementById('f-no').value = t.no;
+  document.getElementById('f-handled-by-tender').value = t.handledBy||'';
   openM('modal-tender');
 }
 function saveTender(){
   const no = document.getElementById('f-no').value.trim();
+  const handledBy = document.getElementById('f-handled-by-tender').value.trim();
   if(!no){ toast('Enter tender number', true); return; }
   if(editingTenderId){
     const t = tenders.find(x=>x.id===editingTenderId);
-    if(t) t.no = no;
+    if(t){ t.no = no; t.handledBy = handledBy; }
   } else {
-    tenders.push({id:uid(), no, entries:[]});
+    tenders.push({id:uid(), no, handledBy, entries:[]});
   }
   save(); render(); closeM('modal-tender');
   toast(editingTenderId ? 'Tender updated ✓' : 'Tender added ✓');
+  syncPush(true);
 }
 function deleteTender(id){
   const t = tenders.find(x=>x.id===id);
@@ -823,9 +852,10 @@ function openAddEntry(tenderId){
   document.getElementById('f-amount').value = '';
   document.getElementById('f-vendor').value = '';
   document.getElementById('f-date').value = new Date().toISOString().slice(0,10);
+  document.getElementById('f-refund-requested-on').value = '';
   document.getElementById('f-notes').value = '';
   document.getElementById('entry-del-btn').style.display = 'none';
-  selectStatus('submitted');
+  selectStatus('refund-pending');
   openM('modal-entry');
   setTimeout(()=>document.getElementById('f-amount').focus(),300);
 }
@@ -840,9 +870,12 @@ function openEditEntry(tenderId, entryId){
   document.getElementById('f-amount').value = e.amount||'';
   document.getElementById('f-vendor').value = e.vendor||'';
   document.getElementById('f-date').value = e.date||'';
+  document.getElementById('f-refund-requested-on').value = e.refundRequestedOn||'';
   document.getElementById('f-notes').value = e.notes||'';
   document.getElementById('entry-del-btn').style.display = '';
-  selectStatus(e.status||'submitted');
+  // Migrate legacy 'submitted' → 'refund-pending'
+  const migratedStatus = (e.status==='submitted') ? 'refund-pending' : (e.status||'refund-pending');
+  selectStatus(migratedStatus);
   openM('modal-entry');
 }
 function selectStatus(val){
@@ -852,18 +885,19 @@ function selectStatus(val){
   });
 }
 function saveEntry(){
-  const amount = document.getElementById('f-amount').value.trim();
-  const vendor = document.getElementById('f-vendor').value.trim();
-  const date   = document.getElementById('f-date').value;
-  const notes  = document.getElementById('f-notes').value.trim();
+  const amount           = document.getElementById('f-amount').value.trim();
+  const vendor           = document.getElementById('f-vendor').value.trim();
+  const date             = document.getElementById('f-date').value;
+  const refundRequestedOn= document.getElementById('f-refund-requested-on').value;
+  const notes            = document.getElementById('f-notes').value.trim();
   if(!amount){ toast('Enter amount', true); return; }
   const t = tenders.find(x=>x.id===editingEntryTenderId);
   if(!t) return;
   if(editingEntryId){
     const e = t.entries.find(x=>x.id===editingEntryId);
-    if(e){ e.amount=amount; e.vendor=vendor; e.date=date; e.status=selectedStatus; e.notes=notes; }
+    if(e){ e.amount=amount; e.vendor=vendor; e.date=date; e.refundRequestedOn=refundRequestedOn; e.status=selectedStatus; e.notes=notes; }
   } else {
-    t.entries.push({id:uid(), amount, vendor, date, status:selectedStatus, notes});
+    t.entries.push({id:uid(), amount, vendor, date, refundRequestedOn, status:selectedStatus, notes});
   }
   save(); render(); closeM('modal-entry');
   toast(editingEntryId ? 'Entry updated ✓' : 'EMD entry added ✓');
@@ -901,46 +935,82 @@ let _tt; function toast(msg, err){
 function exportExcel(){
   if(!tenders.length){ toast('No data to export', true); return; }
 
-  // Build CSV rows
-  const rows = [['Tender No','Vendor','Amount (INR)','Date','Status','Notes']];
+  // Load SheetJS dynamically
+  if(typeof XLSX === 'undefined'){
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+    s.onload = () => _doExport();
+    s.onerror = () => { toast('Failed to load export library', true); };
+    document.head.appendChild(s);
+  } else {
+    _doExport();
+  }
+}
+
+function _doExport(){
+  const wb = XLSX.utils.book_new();
+
+  // ── Sheet 1: Summary (one row per tender, all vendors listed) ──
+  const summaryData = [['Tender No','Handled By','No. of Bidders','Vendors (All)','Total EMD (₹)','Refund Pending','Refund Requested','Refunded']];
   tenders.forEach(t => {
-    if(!t.entries || !t.entries.length){
-      rows.push([t.no, '', '', '', '', '']);
+    const entries = t.entries||[];
+    const vendors = entries.map(e=>e.vendor||'—').join(', ');
+    const pending   = entries.filter(e=>e.status==='refund-pending'||e.status==='submitted').length;
+    const requested = entries.filter(e=>e.status==='refund-requested').length;
+    const refunded  = entries.filter(e=>e.status==='refunded').length;
+    const total     = entries.reduce((s,e)=>s+(parseFloat(e.amount)||0),0);
+    summaryData.push([t.no, t.handledBy||'', entries.length, vendors, total, pending, requested, refunded]);
+  });
+  const wsSummary = XLSX.utils.aoa_to_sheet(summaryData);
+  wsSummary['!cols'] = [{wch:20},{wch:16},{wch:12},{wch:50},{wch:16},{wch:14},{wch:16},{wch:12}];
+
+  // Style header row bold
+  const headerStyle = {font:{bold:true}, fill:{fgColor:{rgb:'1E3A5F'}}, alignment:{horizontal:'center'}};
+  const hdrKeys = ['A1','B1','C1','D1','E1','F1','G1','H1'];
+  hdrKeys.forEach(k=>{ if(wsSummary[k]) wsSummary[k].s = headerStyle; });
+
+  XLSX.utils.book_append_sheet(wb, wsSummary, 'Summary');
+
+  // ── Sheet 2: Details (one row per bidder entry) ──
+  const detailData = [['Tender No','Handled By','Bidder / Vendor','Amount (₹)','Payment Date','Refund Requested On','Status','Notes']];
+  tenders.forEach(t => {
+    const entries = t.entries||[];
+    if(!entries.length){
+      detailData.push([t.no, t.handledBy||'', '', '', '', '', '', '']);
     } else {
-      t.entries.forEach(e => {
-        rows.push([
+      entries.forEach(e => {
+        detailData.push([
           t.no,
-          e.vendor || '',
-          e.amount || '',
-          e.date || '',
-          e.status === 'refund-pending' ? 'Refund Pending' :
-            e.status === 'refunded' ? 'Refunded' : 'Submitted',
-          e.notes || ''
+          t.handledBy||'',
+          e.vendor||'',
+          parseFloat(e.amount)||0,
+          e.date ? new Date(e.date).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) : '',
+          e.refundRequestedOn ? new Date(e.refundRequestedOn).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) : '',
+          statusLabel(e.status),
+          e.notes||''
         ]);
       });
     }
   });
+  const wsDetail = XLSX.utils.aoa_to_sheet(detailData);
+  wsDetail['!cols'] = [{wch:20},{wch:16},{wch:28},{wch:14},{wch:14},{wch:18},{wch:18},{wch:30}];
+  const dhdrKeys = ['A1','B1','C1','D1','E1','F1','G1','H1'];
+  dhdrKeys.forEach(k=>{ if(wsDetail[k]) wsDetail[k].s = headerStyle; });
 
-  // Escape CSV cells
-  const csv = rows.map(r =>
-    r.map(c => {
-      const s = String(c).replace(/"/g,'""');
-      return /[,"\n]/.test(s) ? `"${s}"` : s;
-    }).join(',')
-  ).join('\r\n');
+  // Color-code status cells
+  const statusColors = {'Refund Pending':'BFD9FF','Refund Requested':'FFF0B3','Refunded':'B7F5D8'};
+  const range = XLSX.utils.decode_range(wsDetail['!ref']||'A1');
+  for(let R = range.s.r+1; R <= range.e.r; R++){
+    const cell = wsDetail[XLSX.utils.encode_cell({r:R,c:6})]; // col G = Status
+    if(cell && cell.v && statusColors[cell.v]){
+      cell.s = {fill:{fgColor:{rgb:statusColors[cell.v]}},alignment:{horizontal:'center'}};
+    }
+  }
 
-  // Add BOM for Excel to correctly read UTF-8 (handles ₹ and other chars)
-  const bom = '\uFEFF';
-  const blob = new Blob([bom + csv], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
+  XLSX.utils.book_append_sheet(wb, wsDetail, 'All Entries');
+
   const date = new Date().toISOString().slice(0,10);
-  a.href = url;
-  a.download = `EMDTrack-${date}.csv`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  XLSX.writeFile(wb, `EMDTrack-${date}.xlsx`);
   toast('Exported to Excel ✓');
 }
 
